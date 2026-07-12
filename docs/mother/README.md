@@ -10,3 +10,6 @@ Working documents for **mother**, the ingest-everything artifact brain.
 | [`detail-cards-wave2.md`](./detail-cards-wave2.md) | Wave-2 deep-dives: video, 3D models, g-code, decks, and text documents — JTBD, full card behavior, manipulation verbs. Adds `model`, `gcode`, `deck` families to the taxonomy. |
 | [`muthr-capability-gaps.md`](./muthr-capability-gaps.md) | What MUTHR needs to actually do extraction, enrichment, inline preview/play, and light manipulation: the capability spine, ten platform-wide gaps, per-family tool stacks, sequencing. |
 | [`muthr-feasibility.md`](./muthr-feasibility.md) | Build-vs-buy, verified: what runs in the browser vs the studio box vs metered APIs, licenses checked, current pricing for already-owned services, and the confidence-first build order. |
+| [`fable-queue.md`](./fable-queue.md) | Judgment items awaiting a frontier-model session. Append instead of guessing. |
+| [`../process/ways-of-working.md`](../process/ways-of-working.md) | The model cascade: Articulate → Scope → Produce → Verify → Review, routing rubric, escalation rules. |
+| [`../specs/`](../specs/) | Spec-ready work packages (template + SPEC-001…006 seeded from the feasibility build order). |
