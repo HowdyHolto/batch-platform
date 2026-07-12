@@ -95,11 +95,12 @@ Everything the machine extracted, in tabs drawn from a **fixed vocabulary** — 
 - **Related artifacts** — same session/day/place, same project, semantically similar, explicitly linked.
 - **People** — speakers, faces, authors, senders → person pages.
 - **Timeline strip** — what was captured just before/after this.
+- **Usage as signal** — opens, plays, queries, and citations are tracked per artifact and feed both ranking and this zone ▸(Amundsen ranks tables page-rank-style by query usage — the things you actually use surface first).
 
 ### Z8 — Record (universal)
-- **Activity** — ingested, enriched, viewed, shared, edited (who/what/when).
+- **Activity** — every entry records **what changed · source · actor · when**, and machine actors are named like human ones ("Transcriber L2", "Speaker-ID", "Boost") ▸(Brandfolder's Asset History Log attributes changes to Auto-Tagging and Asset Automations alongside users — AI provenance logged like human edits).
 - **Versions** — edits and re-ingests, diffable where possible.
-- **All metadata** — the exhaustive table (full EXIF, codec params, hashes, storage key). Collapsed by default, searchable.
+- **All metadata** — the exhaustive table (full EXIF, codec params, hashes, storage key). Collapsed by default — but **collapsed ≠ unindexed**: every field here remains searchable ▸(Brandfolder collapses EXIF/OCR into a tab yet indexes all of it for anyone's search).
 - **Storage** — where the bytes live (R2 key, original location), integrity hash.
 
 ---
@@ -116,6 +117,12 @@ Every card supports six verb families. Types differ only in *how* each verb mani
 | **Act** | do something outward | share, export, open-in, create todo/event, send |
 | **Converse** | prompt against the artifact | "what did we decide about pricing?" |
 | **Connect** | wire it into the graph | link to project/person/artifact, merge duplicates |
+
+### Capture is anchored
+Notes, highlights, and comments attach to a **coordinate inside the content** — timestamp, page, cell, region — by default, with an explicit toggle to detach for file-level remarks ▸(Frame.io anchors comments to timecode/pagestamp by default; detaching is the deliberate act). Every anchored capture gets **dual representation**: a card in the panel *and* a marker on the content itself (scrubber bubble, page-rail tick, cell badge). Range captures (a span of audio, a page range) become a playback/reading window when tapped. And capture verbs also surface **at the selection**: highlight transcript or document text → clip / todo / copy / comment right there ▸(Fireflies' highlight-to-soundbite).
+
+### Converse, concretely
+The prompt affordance opens a **docked, collapsible companion panel** scoped to this artifact — it persists across Intelligence tabs, never a modal ▸(Otter Chat + Outline + Comments share a persistent right panel; Fireflies embeds AskFred per-meeting). It opens **pre-populated** — the caption/summary plus 2–3 suggested prompts derived from the content — never an empty box ▸(Acrobat AI scans the doc on upload and leads with an overview + suggested questions). Answers **cite positions** (timestamp, page, cell) and tapping a citation highlights the receipt in the hero ▸(Acrobat's numbered citations highlight the source passage). Context = artifact + all its enrichments + its notes.
 
 ### Boost ladder (enrichment states)
 Visible on every card as a compact state indicator:
@@ -143,7 +150,7 @@ Nothing auto-creates externally without acceptance. mother's own memory ingestio
 
 The taxonomy has two levels: **family** (drives the card layout) and **subkind** (tunes modules and facts within it). Below, each family's spec: Hero, Facts, primary verb, Intelligence tabs, type verbs, and capture affordances.
 
-Patterns marked ▸ are borrowed from the research pass (see companion doc for teardowns + sources).
+Patterns marked ▸ cite an app precedent. Their evidence status (verified / observed / design intent) is tracked per family in the [companion research doc](./detail-card-research.md).
 
 ---
 
@@ -153,12 +160,13 @@ Patterns marked ▸ are borrowed from the research pass (see companion doc for t
 - **Hero:** waveform scrubber with **speaker-colored segments** ▸(Otter's diarized timeline); playhead follows a live **synced transcript** that highlights word-by-word ▸(Voice Memos '26, Descript). Skip-silence and 1–2× speed controls on the player.
 - **Facts:** duration · speakers · captured (when) · where (if location) · device/source · words.
 - **Primary verb:** **Listen** (with transcript follow).
-- **Intelligence tabs:** Transcript · Summary · Items · Entities.
+- **Intelligence tabs:** Transcript · Summary · Items · Entities. **Digest-first:** once L3 lands, `meeting`/`call` subkinds default to the Summary tab with the transcript one tab away ▸(verified: Otter leads with the Summary tab; Fireflies gives center screen to the AI summary — the raw content backs the digest, not vice versa). Short `memo`s stay transcript-first.
+- **Selection actions:** highlighting transcript text surfaces clip / todo / copy / comment at the selection ▸(Fireflies' highlight-to-soundbite).
 - **Speakers module (the signature feature):**
   - Chips per detected speaker: `Speaker 1 (14 min)` → tap → **Name this speaker** with typeahead against known people.
   - Once named, mother stores a **voiceprint** and *suggests* the identity on future recordings: "Sounds like Danny — confirm?" Confirmation is always explicit; voiceprints are user-deletable (this is sensitive biometric data — opt-in, local to the user's brain, never shared).
   - Naming a speaker retro-labels their segments everywhere and links the artifact to the person page.
-- **Scanners:** todos ("I need to…", "let's get…"), calendar intents (date/time + commitment), decisions, follow-ups ▸(Fireflies/Granola action-item mining). Surfaced as accept/dismiss chips with jump-to-timestamp receipts.
+- **Scanners:** todos ("I need to…", "let's get…"), calendar intents (date/time + commitment), decisions, follow-ups ▸(Otter verified: mines action items and auto-assigns them from conversation content). Surfaced as accept/dismiss chips with jump-to-timestamp receipts. **Note:** transcript→calendar-event extraction produced *no* surviving claims for any incumbent in the research pass — the calendar scanner is differentiation, not table stakes.
 - **Type verbs:** Name speakers · Share clip (time-range) · Export transcript.
 - **Capture:** correct transcript inline (feeds retraining), highlight a passage (becomes a quotable memory), tag moments at timestamps.
 
@@ -220,7 +228,7 @@ Patterns marked ▸ are borrowed from the research pass (see companion doc for t
 - **Type verbs:** Clip & share range · Extract frame · Extract audio.
 
 ### 5.8 Document (`doc`) — PDF, Word, Pages
-- **Hero:** cover page + page-thumbnail rail ▸(Acrobat/Preview); toggle to continuous **reading view**.
+- **Hero:** cover page + page-thumbnail rail ▸(Acrobat/Preview); toggle to continuous **reading view**. Heterogeneous formats normalize to **one canonical render pipeline** per family — docx/pptx/rtf render through the same PDF-like pipeline rather than bespoke viewers ▸(Acrobat AI converts DOCX/PPTX/TXT/RTF to PDF before chat).
 - **Facts:** pages · words · author · created/modified · language · format.
 - **Primary verb:** **Read**.
 - **Intelligence tabs:** Summary · Text · Items (deadlines, obligations — think contracts) · Entities (parties, amounts, dates).
@@ -301,6 +309,8 @@ What keeps 16 families feeling like **one product**:
 6. **Every suggestion shows its receipt** and every acceptance is explicit.
 7. **Same component kit everywhere:** GridBlock, stat block, chip, tag, list row, tab bar, player shell. A new family is a *composition*, not new components.
 8. **Cards are shareable views.** Share renders the same card (minus private zones — notes, activity, connections stay home) as a link/snapshot.
+9. **Collapsed is a display decision, never a retrieval decision.** Anything demoted to Z8 stays fully indexed and searchable.
+10. **Modules render honestly at every boost level.** Never promise a tab that processing hasn't produced ▸(the "Otter generates everything for every conversation" claim was *refuted* in verification — AI artifacts are conditional in every real product; design for their absence).
 
 **Adding a new file family is a checklist, not a project:**
 choose hero → pick 4–6 facts → pick primary verb + ≤3 type verbs → pick intelligence tabs → define L1/L2 enrichers → map capture affordances. Ship.
