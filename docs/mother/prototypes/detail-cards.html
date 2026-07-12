@@ -1,0 +1,1342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+<body>
+<title>mother — Detail Card System</title>
+<style>
+  :root {
+    color-scheme: dark;
+    --bg: #221f1d;
+    --bg-raise: #262320;
+    --linen: #efede6;
+    --dim: #68625c;
+    --faint: rgba(239, 237, 230, 0.08);
+    --faint2: rgba(239, 237, 230, 0.16);
+    --bronze: #cc5803;
+    --choc: #e2711d;
+    --saffron: #ff9505;
+    --mint: #87e9b1;
+    --sp1: #e2711d; /* speaker / categorical — validated on #221f1d */
+    --sp2: #3fa46e;
+    --sp3: #5e8fc7;
+    --mono: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, monospace;
+  }
+  html { background: var(--bg); }
+  body {
+    background: var(--bg);
+    color: var(--linen);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-weight: 300;
+    letter-spacing: -0.005em;
+    line-height: 1.5;
+    margin: 0;
+  }
+  * { box-sizing: border-box; }
+  ::selection { background: var(--bronze); color: var(--linen); }
+  a { color: inherit; text-decoration: none; }
+  button { font: inherit; color: inherit; background: none; border: none; cursor: pointer; }
+  button:focus-visible, a:focus-visible, [tabindex]:focus-visible {
+    outline: 1px dashed var(--saffron); outline-offset: 2px;
+  }
+  .wrap { max-width: 1060px; margin: 0 auto; padding: 0 24px 120px; }
+
+  /* ---------- page header ---------- */
+  .masthead { padding: 72px 0 40px; border-bottom: 1px dashed var(--faint); }
+  .eyebrow { font-size: 10px; letter-spacing: 0.24em; text-transform: uppercase; color: var(--dim); }
+  .masthead h1 {
+    font-weight: 300; letter-spacing: -0.04em; line-height: 1.05;
+    font-size: clamp(2.4rem, 5vw, 4rem); margin: 18px 0 20px; text-wrap: balance;
+  }
+  .masthead h1 .accent { color: var(--bronze); }
+  .masthead p.lede { max-width: 58ch; color: var(--dim); font-size: 15px; margin: 0; }
+  .masthead p.lede b { color: var(--linen); font-weight: 400; }
+
+  /* ---------- zone legend ---------- */
+  .zonemap { display: grid; grid-template-columns: repeat(4, 1fr); border: 1px dashed var(--faint); border-bottom: 0; margin-top: 44px; }
+  .zonemap > div { border-bottom: 1px dashed var(--faint); border-right: 1px dashed var(--faint); padding: 14px 16px 16px; }
+  .zonemap > div:nth-child(4n) { border-right: 0; }
+  .zk { font-family: var(--mono); font-size: 10px; color: var(--saffron); letter-spacing: 0.08em; }
+  .zt { font-size: 12px; margin-top: 3px; }
+  .zd { font-size: 11px; color: var(--dim); margin-top: 2px; line-height: 1.45; }
+
+  /* ---------- jump nav ---------- */
+  .jump {
+    position: sticky; top: 0; z-index: 30; background: rgba(34,31,29,0.94);
+    backdrop-filter: blur(6px); border-bottom: 1px dashed var(--faint);
+    display: flex; gap: 4px; padding: 10px 0; margin-bottom: 8px; overflow-x: auto;
+  }
+  .jump a {
+    font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--dim);
+    padding: 6px 14px; border: 1px dashed transparent; white-space: nowrap;
+  }
+  .jump a:hover { color: var(--linen); border-color: var(--faint2); }
+
+  /* ---------- card scaffolding ---------- */
+  .card-section { padding-top: 64px; scroll-margin-top: 48px; }
+  .rules { scroll-margin-top: 48px; }
+  .card-head { display: flex; align-items: baseline; gap: 16px; margin-bottom: 14px; }
+  .card-head .n { font-family: var(--mono); font-size: 11px; color: var(--bronze); }
+  .card-head h2 { font-weight: 300; letter-spacing: -0.03em; font-size: 1.55rem; margin: 0; }
+  .card-head .why { font-size: 12px; color: var(--dim); margin-left: auto; max-width: 34ch; text-align: right; }
+
+  .card { border: 1px dashed var(--faint2); background: var(--bg); }
+  .grid { display: grid; }
+  .cell { border: 1px dashed var(--faint); border-width: 0 1px 1px 0; padding: 16px 18px; position: relative; min-width: 0; }
+  .cell.pad0 { padding: 0; }
+  .ztag {
+    position: absolute; top: 8px; right: 10px; z-index: 5;
+    font-family: var(--mono); font-size: 9px; letter-spacing: 0.1em; color: var(--dim);
+    background: rgba(34,31,29,0.92); padding: 1px 0 1px 8px;
+  }
+  .ztag em { color: var(--saffron); font-style: normal; }
+
+  /* identity strip */
+  .id-strip { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; }
+  .badge {
+    display: inline-flex; align-items: center; gap: 8px;
+    font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase;
+  }
+  .badge .glyph { width: 26px; height: 26px; display: grid; place-items: center; border: 1px dashed var(--faint2); }
+  .chip {
+    font-family: var(--mono); font-size: 10px; color: var(--dim);
+    border: 1px dashed var(--faint2); padding: 2px 8px; letter-spacing: 0.04em;
+  }
+  .title-line { flex-basis: 100%; display: flex; flex-wrap: wrap; align-items: baseline; gap: 12px; }
+  .title { font-size: clamp(1.3rem, 2.6vw, 1.9rem); font-weight: 300; letter-spacing: -0.03em; line-height: 1.15; }
+  .title .edit { color: var(--dim); font-size: 11px; margin-left: 6px; }
+  .caption { flex-basis: 100%; font-size: 12.5px; color: var(--dim); display: flex; gap: 8px; align-items: baseline; }
+  .caption .ai { color: var(--saffron); font-family: var(--mono); font-size: 10px; white-space: nowrap; }
+  .prov { flex-basis: 100%; font-size: 11px; color: var(--dim); display: flex; flex-wrap: wrap; gap: 6px 14px; }
+  .prov b { color: var(--linen); font-weight: 400; }
+  .boost { display: inline-flex; gap: 4px; align-items: center; margin-left: auto; }
+  .boost i { width: 6px; height: 6px; border-radius: 50%; background: var(--faint2); }
+  .boost i.on { background: var(--mint); }
+  .boost span { font-size: 9px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--dim); margin-left: 6px; }
+
+  /* facts (stat blocks) */
+  .facts { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; }
+  .fact { border-right: 1px dashed var(--faint); padding: 14px 18px 16px; min-width: 0; }
+  .fact:last-child { border-right: 0; }
+  .fact .v { font-size: clamp(1.3rem, 2.4vw, 1.9rem); font-weight: 300; letter-spacing: -0.03em; color: var(--linen); font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .fact .v small { font-size: 0.55em; color: var(--dim); letter-spacing: 0; }
+  .fact .k { font-size: 9px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--dim); margin-top: 4px; }
+  .fact.tap { cursor: pointer; transition: background 75ms; }
+  .fact.tap:hover { background: rgba(255,149,5,0.05); }
+
+  /* actions */
+  .actions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+  .btn-primary {
+    background: var(--bronze); color: var(--linen);
+    font-size: 10.5px; letter-spacing: 0.2em; text-transform: uppercase; font-weight: 500;
+    padding: 12px 22px; transition: background 75ms;
+  }
+  .btn-primary:hover { background: var(--saffron); }
+  .btn {
+    border: 1px dashed var(--faint2); color: var(--dim);
+    font-size: 10.5px; letter-spacing: 0.14em; text-transform: uppercase;
+    padding: 11px 14px; transition: color 75ms, border-color 75ms;
+  }
+  .btn:hover { color: var(--linen); border-color: rgba(239,237,230,0.4); }
+  .btn.converse { color: var(--saffron); border-color: rgba(255,149,5,0.35); }
+  .btn.converse:hover { color: var(--saffron); border-color: var(--saffron); }
+  .kbd { font-family: var(--mono); font-size: 9px; color: var(--dim); border: 1px solid var(--faint); padding: 1px 5px; margin-left: 8px; }
+
+  /* intelligence tabs */
+  .tabs { display: flex; gap: 2px; border-bottom: 1px dashed var(--faint); padding: 0 110px 0 6px; flex-wrap: wrap; }
+  .tab {
+    font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--dim);
+    padding: 12px 14px 10px; border-bottom: 1px solid transparent; margin-bottom: -1px;
+  }
+  .tab:hover { color: var(--linen); }
+  .tab[aria-selected="true"] { color: var(--saffron); border-bottom-color: var(--saffron); }
+  .tab .ct { font-family: var(--mono); font-size: 9px; color: var(--bronze); margin-left: 5px; }
+  .panel { padding: 16px 18px; display: none; }
+  .panel.active { display: block; }
+
+  /* transcript */
+  .tr-row { display: grid; grid-template-columns: 52px 92px 1fr; gap: 12px; padding: 7px 0; font-size: 13px; align-items: baseline; }
+  .tr-row + .tr-row { border-top: 1px dashed var(--faint); }
+  .tc { font-family: var(--mono); font-size: 10px; color: var(--dim); }
+  .spk { font-size: 11px; letter-spacing: 0.06em; display: flex; gap: 7px; align-items: baseline; white-space: nowrap; }
+  .spk i { width: 7px; height: 7px; border-radius: 50%; flex: none; transform: translateY(-1px); }
+  .tr-t { color: rgba(239,237,230,0.86); }
+  .hl { background: rgba(255,149,5,0.14); border-bottom: 1px dashed rgba(255,149,5,0.6); padding: 0 2px; }
+
+  /* suggestions (Items) */
+  .sug { display: grid; grid-template-columns: 20px 1fr auto; gap: 12px; align-items: center; padding: 11px 0; }
+  .sug + .sug { border-top: 1px dashed var(--faint); }
+  .sug .ic { font-size: 13px; color: var(--saffron); font-family: var(--mono); }
+  .sug .what { font-size: 13px; }
+  .sug .receipt { font-family: var(--mono); font-size: 10px; color: var(--dim); margin-top: 2px; }
+  .sug .receipt a { color: var(--dim); border-bottom: 1px dashed var(--faint2); }
+  .sug .receipt a:hover { color: var(--saffron); }
+  .sug-acts { display: flex; gap: 6px; }
+  .sug-acts button { font-size: 9.5px; letter-spacing: 0.12em; text-transform: uppercase; padding: 6px 10px; border: 1px dashed var(--faint2); color: var(--dim); }
+  .sug-acts button.acc { color: var(--mint); border-color: rgba(135,233,177,0.35); }
+  .sug-acts button:hover { border-color: rgba(239,237,230,0.45); color: var(--linen); }
+  .sug-acts button.acc:hover { color: var(--mint); border-color: var(--mint); }
+  .sug.done .what, .sug.done .receipt { opacity: 0.45; }
+  .sug.done .what { text-decoration: line-through; text-decoration-color: var(--dim); }
+  .ok-note { font-size: 10px; color: var(--mint); font-family: var(--mono); display: none; }
+  .sug.done .ok-note { display: inline; }
+  .sug.done .sug-acts button { display: none; }
+
+  /* tags & context */
+  .tagrow { display: flex; flex-wrap: wrap; gap: 6px; }
+  .tag { font-size: 11px; padding: 4px 10px; border: 1px solid var(--faint2); color: rgba(239,237,230,0.85); }
+  .tag.auto { border-style: dashed; color: var(--dim); }
+  .tag.auto i { display: inline-block; width: 5px; height: 5px; border-radius: 50%; background: var(--saffron); margin-right: 6px; transform: translateY(-1px); }
+  .tag.add { border-style: dashed; color: var(--dim); }
+  .tag.add:hover { color: var(--saffron); border-color: rgba(255,149,5,0.5); }
+  .microlabel { font-size: 9px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--dim); margin: 0 0 8px; }
+  .notefield { border: 1px dashed var(--faint); padding: 10px 12px; font-size: 12px; color: var(--dim); margin-top: 12px; }
+  .notefield b { color: var(--linen); font-weight: 400; }
+
+  /* connections / record strips */
+  .mini-list { font-size: 12px; }
+  .mini-list .row { display: flex; gap: 10px; align-items: baseline; padding: 7px 0; border-bottom: 1px dashed var(--faint); }
+  .mini-list .row:last-child { border-bottom: 0; }
+  .mini-list .t { font-family: var(--mono); font-size: 9px; color: var(--dim); letter-spacing: 0.08em; text-transform: uppercase; flex: none; width: 52px; }
+  .mini-list .why2 { color: var(--dim); font-size: 11px; margin-left: auto; white-space: nowrap; }
+  .actlog { font-family: var(--mono); font-size: 10px; color: var(--dim); line-height: 2; }
+  .actlog b { color: rgba(239,237,230,0.75); font-weight: 400; }
+  .allmeta { font-size: 11px; color: var(--dim); border-top: 1px dashed var(--faint); margin-top: 10px; padding-top: 10px; }
+  .allmeta:hover { color: var(--linen); cursor: pointer; }
+
+  /* ---------- type-specific heroes ---------- */
+  /* voice */
+  .wave-wrap { padding: 22px 18px 14px; }
+  .wave-canvas { width: 100%; height: 96px; display: block; }
+  .wave-under { display: flex; align-items: center; gap: 14px; margin-top: 12px; flex-wrap: wrap; }
+  .play {
+    width: 44px; height: 44px; border-radius: 50%; background: var(--bronze); color: var(--linen);
+    display: grid; place-items: center; font-size: 15px; flex: none;
+  }
+  .play:hover { background: var(--saffron); }
+  .timecode { font-family: var(--mono); font-size: 12px; color: var(--linen); font-variant-numeric: tabular-nums; }
+  .timecode span { color: var(--dim); }
+  .pillbtn { font-family: var(--mono); font-size: 10px; color: var(--dim); border: 1px dashed var(--faint2); padding: 4px 9px; }
+  .pillbtn:hover { color: var(--linen); }
+  .spk-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+  .spk-chip { display: inline-flex; align-items: center; gap: 8px; border: 1px dashed var(--faint2); padding: 7px 12px; font-size: 12px; }
+  .spk-chip i { width: 8px; height: 8px; border-radius: 50%; }
+  .spk-chip .mins { font-family: var(--mono); font-size: 10px; color: var(--dim); }
+  .spk-chip.unnamed { border-color: rgba(255,149,5,0.4); }
+  .spk-chip.unnamed .name { color: var(--saffron); }
+
+  /* track */
+  .art { aspect-ratio: 1; position: relative; overflow: hidden; }
+  .art canvas { width: 100%; height: 100%; display: block; }
+  .track-hero { display: grid; grid-template-columns: 220px 1fr; }
+  .track-right { padding: 18px; display: flex; flex-direction: column; justify-content: flex-end; gap: 14px; border-left: 1px dashed var(--faint); }
+  .thinwave { display: flex; align-items: flex-end; gap: 2px; height: 42px; }
+  .thinwave i { flex: 1; background: var(--faint2); min-height: 3px; }
+  .thinwave i.played { background: var(--bronze); }
+  .credits { font-size: 12px; line-height: 2; }
+  .credits .role { color: var(--dim); font-size: 10px; text-transform: uppercase; letter-spacing: 0.14em; margin-right: 10px; }
+
+  /* image */
+  .photo { position: relative; }
+  .photo canvas { width: 100%; height: 300px; display: block; }
+  .photo .zoomchip { position: absolute; right: 12px; bottom: 12px; font-family: var(--mono); font-size: 10px; color: var(--linen); background: rgba(34,31,29,0.8); border: 1px dashed var(--faint2); padding: 4px 9px; }
+  .exifstrip { display: flex; flex-wrap: wrap; gap: 0; border-top: 1px dashed var(--faint); }
+  .exifstrip span { font-family: var(--mono); font-size: 10.5px; color: var(--dim); padding: 9px 14px; border-right: 1px dashed var(--faint); }
+  .exifstrip span b { color: var(--linen); font-weight: 400; }
+  .swatches { display: flex; gap: 8px; align-items: center; }
+  .sw { width: 34px; height: 34px; border: 1px solid var(--faint2); position: relative; cursor: pointer; }
+  .sw code { position: absolute; left: 50%; transform: translateX(-50%); top: calc(100% + 4px); font-size: 8.5px; color: var(--dim); font-family: var(--mono); }
+  .mapchip { display: inline-flex; align-items: center; gap: 8px; border: 1px dashed var(--faint2); padding: 6px 10px; font-size: 11px; color: var(--dim); }
+  .mapchip .pin { color: var(--mint); }
+
+  /* vector */
+  .vec-stage { display: grid; place-items: center; height: 280px; transition: background 100ms; position: relative; }
+  .vec-stage.bg-dark { background: var(--bg); }
+  .vec-stage.bg-light { background: #efede6; }
+  .vec-stage.bg-checker {
+    background-image: repeating-conic-gradient(rgba(239,237,230,0.1) 0% 25%, transparent 0% 50%);
+    background-size: 20px 20px;
+  }
+  .vec-stage svg { height: 170px; width: auto; }
+  .bg-toggle { position: absolute; top: 10px; left: 12px; display: flex; gap: 2px; }
+  .bg-toggle button { font-family: var(--mono); font-size: 9px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--dim); border: 1px dashed var(--faint2); padding: 4px 8px; background: var(--bg); }
+  .bg-toggle button[aria-pressed="true"] { color: var(--saffron); border-color: rgba(255,149,5,0.5); }
+
+  /* dataset */
+  .dgrid { width: 100%; border-collapse: collapse; font-size: 11.5px; }
+  .dgrid th { text-align: left; padding: 10px 12px 8px; border-bottom: 1px solid var(--faint2); border-right: 1px dashed var(--faint); vertical-align: bottom; min-width: 92px; }
+  .dgrid td { padding: 7px 12px; border-bottom: 1px dashed var(--faint); border-right: 1px dashed var(--faint); color: rgba(239,237,230,0.78); font-family: var(--mono); font-size: 10.5px; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .dgrid .cname { font-family: var(--mono); font-size: 10px; color: var(--linen); letter-spacing: 0.03em; }
+  .dgrid .ctype { font-family: var(--mono); font-size: 8.5px; color: var(--dim); text-transform: uppercase; letter-spacing: 0.1em; margin-left: 6px; }
+  .colviz { display: flex; align-items: flex-end; gap: 1.5px; height: 22px; margin-top: 6px; }
+  .colviz i { flex: 1; background: rgba(94,143,199,0.55); min-height: 2px; }
+  .colviz.cat i { background: rgba(63,164,110,0.55); }
+  .cnull { font-size: 8.5px; color: var(--dim); font-family: var(--mono); margin-top: 4px; }
+  .ask { display: flex; gap: 0; border: 1px dashed rgba(255,149,5,0.4); }
+  .ask input {
+    flex: 1; background: transparent; border: 0; color: var(--linen);
+    font: 300 13px/1 inherit; font-family: inherit; padding: 13px 14px; outline: none;
+  }
+  .ask input::placeholder { color: var(--dim); }
+  .ask button { background: var(--bronze); color: var(--linen); font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase; padding: 0 18px; }
+  .ask button:hover { background: var(--saffron); }
+  .exq { display: flex; gap: 6px; margin-top: 10px; flex-wrap: wrap; }
+  .exq button { font-size: 10.5px; color: var(--dim); border: 1px dashed var(--faint); padding: 4px 10px; }
+  .exq button:hover { color: var(--saffron); border-color: rgba(255,149,5,0.4); }
+
+  /* doc */
+  .doc-hero { display: grid; grid-template-columns: 1fr 92px; }
+  .page-mock { margin: 20px; background: #eae7de; color: #2a2724; padding: 26px 28px; min-height: 240px; box-shadow: 0 0 0 1px rgba(239,237,230,0.12); }
+  .page-mock h4 { font-weight: 500; font-size: 13px; letter-spacing: 0.01em; margin: 0 0 4px; }
+  .page-mock .sub { font-size: 9px; color: #6b675f; margin-bottom: 14px; }
+  .pline { height: 5px; background: rgba(42,39,36,0.18); margin: 6px 0; }
+  .pline.w60 { width: 60%; } .pline.w85 { width: 85%; } .pline.w72 { width: 72%; } .pline.w40 { width: 40%; }
+  .ptable { margin-top: 12px; border: 1px solid rgba(42,39,36,0.25); }
+  .ptable div { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; }
+  .ptable span { border-bottom: 1px solid rgba(42,39,36,0.15); border-right: 1px solid rgba(42,39,36,0.15); padding: 3px 6px; font-size: 7.5px; font-family: var(--mono); }
+  .thumbs { border-left: 1px dashed var(--faint); display: flex; flex-direction: column; gap: 10px; padding: 30px 12px 14px; }
+  .thumb { aspect-ratio: 3/4; background: rgba(239,237,230,0.09); border: 1px solid var(--faint); position: relative; }
+  .thumb.cur { border-color: var(--saffron); }
+  .thumb span { position: absolute; bottom: 3px; right: 5px; font-family: var(--mono); font-size: 8px; color: var(--dim); }
+  .outline-list { font-size: 12px; line-height: 2.1; color: rgba(239,237,230,0.8); }
+  .outline-list .pg { font-family: var(--mono); font-size: 9.5px; color: var(--dim); margin-left: 8px; }
+  .sum-points { font-size: 13px; line-height: 1.7; margin: 8px 0 0; padding-left: 16px; }
+  .sum-points li { margin-bottom: 6px; }
+  .sum-points li::marker { color: var(--bronze); }
+
+  /* footer */
+  .rules { margin-top: 96px; border-top: 1px dashed var(--faint); padding-top: 40px; }
+  .rules h3 { font-weight: 300; letter-spacing: -0.02em; font-size: 1.4rem; margin: 0 0 24px; }
+  .rules-grid { display: grid; grid-template-columns: repeat(4, 1fr); border: 1px dashed var(--faint); border-bottom: 0; }
+  .rules-grid > div { border-bottom: 1px dashed var(--faint); border-right: 1px dashed var(--faint); padding: 16px; }
+  .rules-grid > div:nth-child(4n) { border-right: 0; }
+  .rules-grid .rk { font-family: var(--mono); font-size: 10px; color: var(--bronze); }
+  .rules-grid .rt { font-size: 12.5px; margin-top: 6px; line-height: 1.5; }
+  .colophon { margin-top: 48px; font-size: 11px; color: var(--dim); line-height: 1.8; }
+  .colophon code { font-family: var(--mono); font-size: 10px; }
+
+  @media (max-width: 880px) {
+    .zonemap, .rules-grid { grid-template-columns: repeat(2, 1fr); }
+    .zonemap > div:nth-child(4n), .rules-grid > div:nth-child(4n) { border-right: 1px dashed var(--faint); }
+    .zonemap > div:nth-child(2n), .rules-grid > div:nth-child(2n) { border-right: 0; }
+    .facts { grid-auto-flow: row; grid-template-columns: repeat(3, 1fr); }
+    .fact { border-bottom: 1px dashed var(--faint); }
+    .track-hero { grid-template-columns: 1fr; }
+    .track-right { border-left: 0; border-top: 1px dashed var(--faint); }
+    .g2, .g3 { grid-template-columns: 1fr !important; }
+    .cell { border-right-width: 0; }
+    .card-head .why { display: none; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    * { transition: none !important; }
+  }
+</style>
+
+<div class="wrap">
+
+  <!-- ============ MASTHEAD ============ -->
+  <header class="masthead">
+    <div class="eyebrow">mother · artifact system · proposal 01</div>
+    <h1><span class="accent">One skeleton,</span><br>many organs.</h1>
+    <p class="lede">Every artifact mother ingests gets a detail card built from the <b>same eight zones in the same order</b> — only the modules inside them change by file family. Below: the zone map, then six fully-worked cards. Zone tags (<span style="font-family:var(--mono);font-size:10px;color:#ff9505">Z1–Z8</span>) stay visible on every card so the shared anatomy is legible.</p>
+
+    <div class="zonemap" role="list">
+      <div role="listitem"><div class="zk">Z1</div><div class="zt">Hero</div><div class="zd">The content itself, interactive. Waveform, player, zoomable image, schema grid.</div></div>
+      <div role="listitem"><div class="zk">Z2</div><div class="zt">Identity</div><div class="zd">Type badge, editable title, AI caption, provenance &amp; boost state.</div></div>
+      <div role="listitem"><div class="zk">Z3</div><div class="zt">Facts</div><div class="zd">4–6 type-specific stats. Tap a fact to filter the library by it.</div></div>
+      <div role="listitem"><div class="zk">Z4</div><div class="zt">Actions</div><div class="zd">One primary verb per family (always spacebar) + universal verbs.</div></div>
+      <div role="listitem"><div class="zk">Z5</div><div class="zt">Intelligence</div><div class="zd">Machine-extracted content in a fixed tab vocabulary. Suggestions carry receipts.</div></div>
+      <div role="listitem"><div class="zk">Z6</div><div class="zt">Context</div><div class="zd">Tags (human vs auto, visibly distinct), project, freeform notes.</div></div>
+      <div role="listitem"><div class="zk">Z7</div><div class="zt">Connections</div><div class="zd">Related artifacts, people, timeline neighbors — fed by the brain.</div></div>
+      <div role="listitem"><div class="zk">Z8</div><div class="zt">Record</div><div class="zd">Activity, versions, the exhaustive metadata table, storage.</div></div>
+    </div>
+  </header>
+
+  <nav class="jump" aria-label="Jump to card">
+    <a href="#voice">01 Voice</a><a href="#track">02 Track</a><a href="#image">03 Image</a>
+    <a href="#vector">04 Vector</a><a href="#dataset">05 Dataset</a><a href="#doc">06 Document</a>
+    <a href="#rules">Rules</a>
+  </nav>
+
+  <!-- ============ 01 VOICE ============ -->
+  <section class="card-section" id="voice">
+    <div class="card-head">
+      <span class="n">01</span><h2>Voice recording</h2>
+      <span class="why">The flagship: diarized waveform, speaker naming, and scanners that mine talk for todos &amp; events.</span>
+    </div>
+    <article class="card" aria-label="Voice memo detail card">
+
+      <div class="grid" style="grid-template-columns: 1fr;">
+        <div class="cell" style="border-right:0;">
+          <span class="ztag"><em>Z2</em> · IDENTITY</span>
+          <div class="id-strip">
+            <span class="badge"><span class="glyph" aria-hidden="true">〜</span>Voice · Memo</span>
+            <span class="chip">m4a</span><span class="chip">18.2 MB</span>
+            <span class="boost" title="Boost level 3 of 4">
+              <i class="on"></i><i class="on"></i><i class="on"></i><i></i><span>Boost L3 · Understood</span>
+            </span>
+            <div class="title-line"><span class="title">Magpod launch — kitchen planning session <button class="edit" aria-label="Edit title">edit</button></span></div>
+            <div class="caption"><span class="ai" title="AI-written caption, confidence 0.93">✦ AI</span> Three-person conversation covering the Magpod launch timeline, product photography, and a PETG filament order.</div>
+            <div class="prov">Source <b>iPhone 15 Pro · Voice Memos</b> · Captured <b>Jul 8, 2:47 PM</b> · Cary NC · Ingested <b>Jul 8, 3:02 PM</b></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid" style="grid-template-columns: 1fr;">
+        <div class="cell pad0" style="border-right:0;">
+          <span class="ztag"><em>Z1</em> · HERO</span>
+          <div class="wave-wrap">
+            <canvas class="wave-canvas" id="wave-voice" aria-label="Waveform, 12 minutes 38 seconds, segments colored by speaker"></canvas>
+            <div class="wave-under">
+              <button class="play" aria-label="Play (space)">▶</button>
+              <span class="timecode">04:12 <span>/ 12:38</span></span>
+              <button class="pillbtn" aria-pressed="false">1.5×</button>
+              <button class="pillbtn" aria-pressed="true">skip silence</button>
+              <span style="margin-left:auto"></span>
+              <div class="spk-chips" aria-label="Speakers">
+                <span class="spk-chip"><i style="background:var(--sp1)"></i>Holt <span class="mins">7:12</span></span>
+                <span class="spk-chip"><i style="background:var(--sp2)"></i>Danny <span class="mins">3:58</span></span>
+                <button class="spk-chip unnamed"><i style="background:var(--sp3)"></i><span class="name">Speaker 3 — sounds like Sam. Confirm?</span> <span class="mins">1:28</span></button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid" style="grid-template-columns: 1fr;">
+        <div class="cell pad0" style="border-right:0;">
+          <span class="ztag" style="top:10px"><em>Z3</em> · FACTS</span>
+          <div class="facts">
+            <div class="fact"><div class="v">12:38</div><div class="k">Duration</div></div>
+            <div class="fact tap" title="Filter library: 3 speakers"><div class="v">3</div><div class="k">Speakers</div></div>
+            <div class="fact"><div class="v">2,847</div><div class="k">Words</div></div>
+            <div class="fact tap" title="Filter library: July 8"><div class="v">Jul 8</div><div class="k">Captured</div></div>
+            <div class="fact"><div class="v">5<small> open</small></div><div class="k">Items found</div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid" style="grid-template-columns: 1fr;">
+        <div class="cell" style="border-right:0;">
+          <span class="ztag"><em>Z4</em> · ACTIONS</span>
+          <div class="actions">
+            <button class="btn-primary">▶ Listen<span class="kbd">space</span></button>
+            <button class="btn converse">✦ Prompt</button>
+            <button class="btn">Name speakers</button>
+            <button class="btn">Share clip</button>
+            <button class="btn">Export transcript</button>
+            <button class="btn">Boost</button>
+            <button class="btn" aria-label="More actions">⋯</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid g3" style="grid-template-columns: 1.6fr 1fr;">
+        <div class="cell pad0">
+          <span class="ztag" style="top:12px"><em>Z5</em> · INTELLIGENCE</span>
+          <div class="tabs" role="tablist" data-tabs="voice">
+            <button class="tab" role="tab" aria-selected="true" data-tab="tr">Transcript</button>
+            <button class="tab" role="tab" aria-selected="false" data-tab="sum">Summary</button>
+            <button class="tab" role="tab" aria-selected="false" data-tab="items">Items<span class="ct">5</span></button>
+            <button class="tab" role="tab" aria-selected="false" data-tab="ent">Entities</button>
+          </div>
+          <div class="panel active" data-panel="tr" role="tabpanel">
+            <div class="tr-row"><span class="tc">03:41</span><span class="spk"><i style="background:var(--sp1)"></i>Holt</span><span class="tr-t">If we're shooting Thursday, the hero shots need the brass version finished by Wednesday night.</span></div>
+            <div class="tr-row"><span class="tc">03:52</span><span class="spk"><i style="background:var(--sp2)"></i>Danny</span><span class="tr-t">Fine — but <span class="hl">I need to order the clear PETG today</span>, we're on the last spool.</span></div>
+            <div class="tr-row"><span class="tc">04:12</span><span class="spk"><i style="background:var(--sp1)"></i>Holt</span><span class="tr-t">Okay. <span class="hl">Photoshoot Thursday at two</span>, garage bay, natural light plus the Viga rig.</span></div>
+            <div class="tr-row"><span class="tc">04:26</span><span class="spk"><i style="background:var(--sp3)"></i>Speaker 3</span><span class="tr-t">I can have the listing copy drafted before then if someone sends me the spec table.</span></div>
+            <div style="padding-top:12px"><button class="pillbtn">search transcript</button> <button class="pillbtn">jump to highlight</button></div>
+          </div>
+          <div class="panel" data-panel="sum" role="tabpanel">
+            <p style="font-size:13px; margin:0; line-height:1.7">Planning session for the Magpod launch. The team fixed a product photoshoot for <b style="font-weight:400">Thursday 2 PM</b>, agreed the brass variant must be finished Wednesday night, flagged a same-day <b style="font-weight:400">clear PETG order</b> (last spool), and assigned listing copy to Speaker 3 pending the spec table.</p>
+            <ul class="sum-points">
+              <li>Launch window holds — no slip discussed.</li>
+              <li>Photography: garage bay, natural light + Viga rig.</li>
+              <li>Open risk: filament lead time vs. Wednesday deadline.</li>
+            </ul>
+          </div>
+          <div class="panel" data-panel="items" role="tabpanel">
+            <div class="sug" data-sug>
+              <span class="ic">◷</span>
+              <span><span class="what">Photoshoot — Thursday Jul 16, 2:00 PM · garage bay</span><br><span class="receipt">calendar event · from <a href="#voice">04:12 “photoshoot Thursday at two”</a></span> <span class="ok-note">→ added to calendar</span></span>
+              <span class="sug-acts"><button class="acc">Accept</button><button>Edit</button><button>Dismiss</button></span>
+            </div>
+            <div class="sug" data-sug>
+              <span class="ic">☐</span>
+              <span><span class="what">Order clear PETG filament — today</span><br><span class="receipt">todo · assigned Danny · from <a href="#voice">03:52 “I need to order the clear PETG today”</a></span> <span class="ok-note">→ todo created</span></span>
+              <span class="sug-acts"><button class="acc">Accept</button><button>Edit</button><button>Dismiss</button></span>
+            </div>
+            <div class="sug" data-sug>
+              <span class="ic">☐</span>
+              <span><span class="what">Finish brass Magpod variant by Wed night</span><br><span class="receipt">todo · from <a href="#voice">03:41</a></span> <span class="ok-note">→ todo created</span></span>
+              <span class="sug-acts"><button class="acc">Accept</button><button>Edit</button><button>Dismiss</button></span>
+            </div>
+            <div class="sug" data-sug>
+              <span class="ic">☐</span>
+              <span><span class="what">Send spec table to Speaker 3 for listing copy</span><br><span class="receipt">follow-up · from <a href="#voice">04:26</a></span> <span class="ok-note">→ todo created</span></span>
+              <span class="sug-acts"><button class="acc">Accept</button><button>Edit</button><button>Dismiss</button></span>
+            </div>
+            <p style="font-size:10.5px;color:var(--dim);margin:12px 0 0">Nothing leaves mother without an explicit accept. Dismissals tune future detection.</p>
+          </div>
+          <div class="panel" data-panel="ent" role="tabpanel">
+            <div class="mini-list">
+              <div class="row"><span class="t">People</span> Holt · Danny · Speaker 3 (unresolved)</div>
+              <div class="row"><span class="t">Products</span> Magpod · Viga light rig</div>
+              <div class="row"><span class="t">Materials</span> clear PETG · brass</div>
+              <div class="row"><span class="t">Dates</span> Thursday Jul 16 2:00 PM · Wednesday night</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="cell" style="border-right:0;">
+          <span class="ztag"><em>Z6</em> · CONTEXT</span>
+          <p class="microlabel">Tags</p>
+          <div class="tagrow">
+            <span class="tag">magpod</span><span class="tag">launch</span>
+            <span class="tag auto" title="auto · 92%"><i></i>filament</span>
+            <span class="tag auto" title="auto · 88%"><i></i>photography</span>
+            <button class="tag add">+ tag</button>
+          </div>
+          <p class="microlabel" style="margin-top:16px">Project</p>
+          <div class="tagrow"><span class="tag" style="border-color:rgba(204,88,3,0.5)">Magpod Launch</span></div>
+          <div class="notefield"><b>Note</b> — decision here overrides the June timeline doc; photoshoot moved from Friday.</div>
+        </div>
+      </div>
+
+      <div class="grid g2" style="grid-template-columns: 1.6fr 1fr;">
+        <div class="cell">
+          <span class="ztag"><em>Z7</em> · CONNECTIONS</span>
+          <div class="mini-list">
+            <div class="row"><span class="t">Image</span> magpod_hero_v2.jpg <span class="why2">same project</span></div>
+            <div class="row"><span class="t">Doc</span> Launch checklist — June timeline <span class="why2">mentioned · contradicted</span></div>
+            <div class="row"><span class="t">Voice</span> Magpod pricing walk-and-talk <span class="why2">same people · Jul 2</span></div>
+          </div>
+        </div>
+        <div class="cell" style="border-right:0;">
+          <span class="ztag"><em>Z8</em> · RECORD</span>
+          <div class="actlog">
+            <b>Jul 8 3:02p</b> ingested · hashed<br>
+            <b>Jul 8 3:04p</b> transcribed · diarized (L2)<br>
+            <b>Jul 9 9:15a</b> Holt confirmed “Danny”
+          </div>
+          <div class="allmeta">All metadata (41) ▸ &nbsp;·&nbsp; Versions (1) ▸ &nbsp;·&nbsp; R2 <code style="font-family:var(--mono);font-size:9px">vo/2026/07/8f31…</code></div>
+        </div>
+      </div>
+    </article>
+  </section>
+
+  <!-- ============ 02 TRACK ============ -->
+  <section class="card-section" id="track">
+    <div class="card-head">
+      <span class="n">02</span><h2>Music track</h2>
+      <span class="why">Artwork is the emotional anchor; identify-by-fingerprint fills the blanks; credits get first-class treatment.</span>
+    </div>
+    <article class="card" aria-label="Music track detail card">
+      <div class="grid" style="grid-template-columns:1fr;">
+        <div class="cell" style="border-right:0;">
+          <span class="ztag"><em>Z2</em> · IDENTITY</span>
+          <div class="id-strip">
+            <span class="badge"><span class="glyph" aria-hidden="true">♪</span>Track · Song</span>
+            <span class="chip">mp3 · 320 kbps</span><span class="chip">8.9 MB</span>
+            <span class="boost"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><span>Boost L4 · Connected</span></span>
+            <div class="title-line"><span class="title">Slow Bloom</span></div>
+            <div class="caption"><span class="ai">✦ AI</span> Mellow instrumental soul — identified by audio fingerprint; metadata was blank on ingest.</div>
+            <div class="prov">Artist <b>Okonski</b> · Album <b>Magnolia</b> · 2023 · Source <b>Downloads watch-folder</b> · Ingested <b>Jun 30</b></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid" style="grid-template-columns:1fr;">
+        <div class="cell pad0" style="border-right:0;">
+          <span class="ztag"><em>Z1</em> · HERO</span>
+          <div class="track-hero">
+            <div class="art"><canvas id="art-track" aria-label="Album artwork placeholder"></canvas></div>
+            <div class="track-right">
+              <div class="thinwave" id="thinwave" aria-hidden="true"></div>
+              <div class="wave-under" style="margin-top:0">
+                <button class="play" aria-label="Play (space)">▶</button>
+                <span class="timecode">1:07 <span>/ 3:42</span></span>
+                <button class="pillbtn">queue next</button>
+                <button class="pillbtn">♡</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid" style="grid-template-columns:1fr;">
+        <div class="cell pad0" style="border-right:0;">
+          <span class="ztag" style="top:10px"><em>Z3</em> · FACTS</span>
+          <div class="facts">
+            <div class="fact"><div class="v">3:42</div><div class="k">Length</div></div>
+            <div class="fact tap" title="Filter library: 88–96 BPM"><div class="v">92<small> bpm</small></div><div class="k">Tempo</div></div>
+            <div class="fact tap" title="Filter library: D minor"><div class="v">Dm</div><div class="k">Key</div></div>
+            <div class="fact"><div class="v">2023</div><div class="k">Year</div></div>
+            <div class="fact"><div class="v">320<small> kbps</small></div><div class="k">Quality</div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid" style="grid-template-columns:1fr;">
+        <div class="cell" style="border-right:0;">
+          <span class="ztag"><em>Z4</em> · ACTIONS</span>
+          <div class="actions">
+            <button class="btn-primary">▶ Play<span class="kbd">space</span></button>
+            <button class="btn converse">✦ Prompt</button>
+            <button class="btn">Add to playlist</button>
+            <button class="btn">Open in DAW</button>
+            <button class="btn">Trim to sample</button>
+            <button class="btn" aria-label="More actions">⋯</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid g2" style="grid-template-columns: 1.6fr 1fr;">
+        <div class="cell pad0">
+          <span class="ztag" style="top:12px"><em>Z5</em> · INTELLIGENCE</span>
+          <div class="tabs" role="tablist" data-tabs="track">
+            <button class="tab" role="tab" aria-selected="true" data-tab="cred">Entities · Credits</button>
+            <button class="tab" role="tab" aria-selected="false" data-tab="sum">Summary</button>
+          </div>
+          <div class="panel active" data-panel="cred" role="tabpanel">
+            <div class="credits">
+              <div><span class="role">Piano</span>Steve Okonski</div>
+              <div><span class="role">Drums</span>Aaron Frazer</div>
+              <div><span class="role">Label</span>Colemine Records</div>
+              <div><span class="role">Fingerprint</span><span style="font-family:var(--mono);font-size:11px;color:var(--dim)">matched 0.98 · filled artist/album/art</span></div>
+            </div>
+          </div>
+          <div class="panel" data-panel="sum" role="tabpanel">
+            <p style="font-size:13px;margin:0;line-height:1.7">Instrumental soul trio piece; warm tape character, sparse drums. In your library it clusters with the “workshop ambience” playlist and two other Colemine releases.</p>
+          </div>
+        </div>
+        <div class="cell" style="border-right:0;">
+          <span class="ztag"><em>Z6</em> · CONTEXT</span>
+          <p class="microlabel">Tags</p>
+          <div class="tagrow">
+            <span class="tag">video-bed</span>
+            <span class="tag auto"><i></i>mellow</span>
+            <span class="tag auto"><i></i>instrumental</span>
+            <button class="tag add">+ tag</button>
+          </div>
+          <div class="notefield"><b>Note</b> — license for shop video use not cleared yet. Check Colemine sync policy before publishing.</div>
+        </div>
+      </div>
+
+      <div class="grid g2" style="grid-template-columns: 1.6fr 1fr;">
+        <div class="cell">
+          <span class="ztag"><em>Z7</em> · CONNECTIONS</span>
+          <div class="mini-list">
+            <div class="row"><span class="t">Track</span> Runner Up — Okonski <span class="why2">same album</span></div>
+            <div class="row"><span class="t">Video</span> magpod_bench_broll.mp4 <span class="why2">used as temp bed</span></div>
+          </div>
+        </div>
+        <div class="cell" style="border-right:0;">
+          <span class="ztag"><em>Z8</em> · RECORD</span>
+          <div class="actlog"><b>Jun 30</b> ingested from watch-folder<br><b>Jun 30</b> fingerprinted · tagged (L2–L3)</div>
+          <div class="allmeta">All metadata (28) ▸ &nbsp;·&nbsp; ID3 raw ▸</div>
+        </div>
+      </div>
+    </article>
+  </section>
+
+  <!-- ============ 03 IMAGE ============ -->
+  <section class="card-section" id="image">
+    <div class="card-head">
+      <span class="n">03</span><h2>Image — photo</h2>
+      <span class="why">Zoomable hero, capture-settings strip, tappable location, extracted palette. Screenshots are a sibling subkind where OCR text is the co-star.</span>
+    </div>
+    <article class="card" aria-label="Photo detail card">
+      <div class="grid" style="grid-template-columns:1fr;">
+        <div class="cell" style="border-right:0;">
+          <span class="ztag"><em>Z2</em> · IDENTITY</span>
+          <div class="id-strip">
+            <span class="badge"><span class="glyph" aria-hidden="true">▣</span>Image · Photo</span>
+            <span class="chip">jpg</span><span class="chip">8.4 MB</span>
+            <span class="boost"><i class="on"></i><i class="on"></i><i class="on"></i><i></i><span>Boost L3</span></span>
+            <div class="title-line"><span class="title">Walnut + brass hardware, bench test fit</span></div>
+            <div class="caption"><span class="ai">✦ AI</span> Close-up of walnut stock with brass inserts on the workbench; no faces, no text detected.</div>
+            <div class="prov">Source <b>Fujifilm X-T4</b> · Captured <b>Jul 3, 4:18 PM</b> · <b>Cary NC</b> · Ingested <b>Jul 3</b></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid" style="grid-template-columns:1fr;">
+        <div class="cell pad0" style="border-right:0;">
+          <span class="ztag"><em>Z1</em> · HERO</span>
+          <div class="photo">
+            <canvas id="photo-hero" aria-label="Photo preview: warm close-up of walnut and brass on a workbench"></canvas>
+            <span class="zoomchip">click to zoom · 1:1</span>
+          </div>
+          <div class="exifstrip" aria-label="Capture settings">
+            <span><b>X-T4</b></span><span>XF <b>35mm</b> f/1.4</span><span>ƒ/<b>2.0</b></span><span><b>1/125</b> s</span><span>ISO <b>400</b></span><span><b>6240 × 4160</b></span>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid" style="grid-template-columns:1fr;">
+        <div class="cell pad0" style="border-right:0;">
+          <span class="ztag" style="top:10px"><em>Z3</em> · FACTS</span>
+          <div class="facts">
+            <div class="fact"><div class="v">26<small> MP</small></div><div class="k">Resolution</div></div>
+            <div class="fact tap"><div class="v">Jul 3</div><div class="k">Taken</div></div>
+            <div class="fact tap" title="Filter: this location"><div class="v" style="font-size:1.05rem;line-height:1.9">◉ Cary NC</div><div class="k">Location</div></div>
+            <div class="fact"><div class="v">8.4<small> MB</small></div><div class="k">Size</div></div>
+            <div class="fact"><div class="v">1</div><div class="k">Near-dupe</div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid" style="grid-template-columns:1fr;">
+        <div class="cell" style="border-right:0;">
+          <span class="ztag"><em>Z4</em> · ACTIONS</span>
+          <div class="actions">
+            <button class="btn-primary">View<span class="kbd">space</span></button>
+            <button class="btn converse">✦ Prompt</button>
+            <button class="btn">Edit</button>
+            <button class="btn">Export sizes</button>
+            <button class="btn">Set as cover</button>
+            <button class="btn" aria-label="More actions">⋯</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid g2" style="grid-template-columns: 1.6fr 1fr;">
+        <div class="cell pad0">
+          <span class="ztag" style="top:12px"><em>Z5</em> · INTELLIGENCE</span>
+          <div class="tabs" role="tablist" data-tabs="image">
+            <button class="tab" role="tab" aria-selected="true" data-tab="ent">Entities</button>
+            <button class="tab" role="tab" aria-selected="false" data-tab="txt">Text · OCR</button>
+            <button class="tab" role="tab" aria-selected="false" data-tab="pal">Palette</button>
+          </div>
+          <div class="panel active" data-panel="ent" role="tabpanel">
+            <div class="mini-list">
+              <div class="row"><span class="t">Objects</span> walnut stock · brass inserts · workbench · calipers</div>
+              <div class="row"><span class="t">Scene</span> workshop · macro/close-up · natural light</div>
+              <div class="row"><span class="t">Faces</span> none detected</div>
+            </div>
+          </div>
+          <div class="panel" data-panel="txt" role="tabpanel">
+            <p style="font-size:12px;color:var(--dim);margin:0">No text found in this image. For screenshots, this tab is first-class: OCR text is selectable directly on the image, detected links go live.</p>
+          </div>
+          <div class="panel" data-panel="pal" role="tabpanel">
+            <div class="swatches" style="padding-bottom:18px">
+              <button class="sw" style="background:#5c4632" title="copy"><code>5C4632</code></button>
+              <button class="sw" style="background:#8a6a48" title="copy"><code>8A6A48</code></button>
+              <button class="sw" style="background:#c8a165" title="copy"><code>C8A165</code></button>
+              <button class="sw" style="background:#3a3128" title="copy"><code>3A3128</code></button>
+              <button class="sw" style="background:#a8874f" title="copy"><code>A8874F</code></button>
+              <span style="font-size:10.5px;color:var(--dim);margin-left:10px">tap to copy · tap-hold to find same-palette artifacts</span>
+            </div>
+          </div>
+        </div>
+        <div class="cell" style="border-right:0;">
+          <span class="ztag"><em>Z6</em> · CONTEXT</span>
+          <p class="microlabel">Tags</p>
+          <div class="tagrow">
+            <span class="tag">magpod</span><span class="tag">materials</span>
+            <span class="tag auto"><i></i>walnut</span><span class="tag auto"><i></i>brass</span>
+            <button class="tag add">+ tag</button>
+          </div>
+          <div class="notefield"><b>Note</b> — this brass finish is the keeper; matte version scratched too easily.</div>
+        </div>
+      </div>
+
+      <div class="grid g2" style="grid-template-columns: 1.6fr 1fr;">
+        <div class="cell">
+          <span class="ztag"><em>Z7</em> · CONNECTIONS</span>
+          <div class="mini-list">
+            <div class="row"><span class="t">Image</span> IMG_4402.jpg <span class="why2">near-duplicate · review</span></div>
+            <div class="row"><span class="t">Voice</span> Magpod launch — kitchen session <span class="why2">same project</span></div>
+            <div class="row"><span class="t">Image</span> 14 more from this shoot <span class="why2">same hour · same place</span></div>
+          </div>
+        </div>
+        <div class="cell" style="border-right:0;">
+          <span class="ztag"><em>Z8</em> · RECORD</span>
+          <div class="actlog"><b>Jul 3</b> ingested · thumbs (L1)<br><b>Jul 3</b> objects · palette · geo (L2–L3)</div>
+          <div class="allmeta">All metadata — full EXIF (63) ▸</div>
+        </div>
+      </div>
+    </article>
+  </section>
+
+  <!-- ============ 04 VECTOR ============ -->
+  <section class="card-section" id="vector">
+    <div class="card-head">
+      <span class="n">04</span><h2>Vector</h2>
+      <span class="why">Rendered on switchable grounds (a white mark on a white card is invisible), free zoom, colors &amp; geometry as facts, export presets.</span>
+    </div>
+    <article class="card" aria-label="Vector asset detail card">
+      <div class="grid" style="grid-template-columns:1fr;">
+        <div class="cell" style="border-right:0;">
+          <span class="ztag"><em>Z2</em> · IDENTITY</span>
+          <div class="id-strip">
+            <span class="badge"><span class="glyph" aria-hidden="true">◇</span>Vector · Logo</span>
+            <span class="chip">svg</span><span class="chip">606 B</span>
+            <span class="boost"><i class="on"></i><i class="on"></i><i></i><i></i><span>Boost L2</span></span>
+            <div class="title-line"><span class="title">batch_mono.svg</span></div>
+            <div class="caption"><span class="ai">✦ AI</span> Single-path “b” monogram, round-capped 9 px stroke, one color. Reads as a lowercase b with a tail loop.</div>
+            <div class="prov">Source <b>repo · src/assets</b> · Modified <b>Feb 19</b> · Ingested <b>Jul 10</b></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid" style="grid-template-columns:1fr;">
+        <div class="cell pad0" style="border-right:0;">
+          <span class="ztag"><em>Z1</em> · HERO</span>
+          <div class="vec-stage bg-dark" id="vecstage">
+            <div class="bg-toggle" role="group" aria-label="Preview background">
+              <button data-bg="bg-dark" aria-pressed="true">dark</button>
+              <button data-bg="bg-light" aria-pressed="false">light</button>
+              <button data-bg="bg-checker" aria-pressed="false">alpha</button>
+            </div>
+            <svg viewBox="0 0 110.84 146.06" role="img" aria-label="Batch b monogram">
+              <path fill="none" stroke="#fff" stroke-linecap="round" stroke-linejoin="round" stroke-width="9.04"
+                d="m46.15,109.62s0,11.02,0,17.86c0,3.72,2.06,7.16,4.72,8.96,5.96,4.04,10.97,5.09,18.73,5.09,20.28,0,36.72-16.31,36.72-36.43s-16.44-36.43-36.72-36.43c-8.92,0-17.09,3.15-23.45,8.4h0V14.93c0-5.75-4.66-10.41-10.41-10.41-5.75,0-10.41,4.66-10.41,10.41v115.58c0,5.71-4.6,10.36-10.31,10.41-5.79.05-10.5-4.62-10.5-10.41V5.82"/>
+            </svg>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid" style="grid-template-columns:1fr;">
+        <div class="cell pad0" style="border-right:0;">
+          <span class="ztag" style="top:10px"><em>Z3</em> · FACTS</span>
+          <div class="facts">
+            <div class="fact"><div class="v">111<small> × 146</small></div><div class="k">Viewbox</div></div>
+            <div class="fact"><div class="v">1</div><div class="k">Path</div></div>
+            <div class="fact"><div class="v">1</div><div class="k">Color</div></div>
+            <div class="fact"><div class="v">9.04<small> px</small></div><div class="k">Stroke</div></div>
+            <div class="fact"><div class="v">606<small> B</small></div><div class="k">Size</div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid" style="grid-template-columns:1fr;">
+        <div class="cell" style="border-right:0;">
+          <span class="ztag"><em>Z4</em> · ACTIONS</span>
+          <div class="actions">
+            <button class="btn-primary">View<span class="kbd">space</span></button>
+            <button class="btn converse">✦ Prompt</button>
+            <button class="btn">PNG 1× 2× 4×</button>
+            <button class="btn">Copy SVG</button>
+            <button class="btn">Recolor</button>
+            <button class="btn" aria-label="More actions">⋯</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid g2" style="grid-template-columns: 1.6fr 1fr;">
+        <div class="cell pad0">
+          <span class="ztag" style="top:12px"><em>Z5</em> · INTELLIGENCE</span>
+          <div class="tabs" role="tablist" data-tabs="vector">
+            <button class="tab" role="tab" aria-selected="true" data-tab="dep">Dependencies</button>
+            <button class="tab" role="tab" aria-selected="false" data-tab="col">Colors</button>
+          </div>
+          <div class="panel active" data-panel="dep" role="tabpanel">
+            <div class="mini-list">
+              <div class="row"><span class="t">Fonts</span> none referenced <span class="why2">✓ self-contained</span></div>
+              <div class="row"><span class="t">Rasters</span> none embedded <span class="why2">✓</span></div>
+              <div class="row"><span class="t">Used by</span> Logo.tsx · NavBar · Footer <span class="why2">3 references in repo</span></div>
+            </div>
+          </div>
+          <div class="panel" data-panel="col" role="tabpanel">
+            <div class="swatches" style="padding-bottom:18px">
+              <button class="sw" style="background:#ffffff" title="copy"><code>FFFFFF</code></button>
+              <span style="font-size:10.5px;color:var(--dim);margin-left:10px">stroke only · no fills</span>
+            </div>
+          </div>
+        </div>
+        <div class="cell" style="border-right:0;">
+          <span class="ztag"><em>Z6</em> · CONTEXT</span>
+          <p class="microlabel">Tags</p>
+          <div class="tagrow">
+            <span class="tag">brand</span><span class="tag">logo</span>
+            <span class="tag auto"><i></i>monogram</span>
+            <button class="tag add">+ tag</button>
+          </div>
+          <div class="notefield"><b>Note</b> — canonical mark. Don’t export filled variants; stroke weight is the identity.</div>
+        </div>
+      </div>
+
+      <div class="grid g2" style="grid-template-columns: 1.6fr 1fr;">
+        <div class="cell">
+          <span class="ztag"><em>Z7</em> · CONNECTIONS</span>
+          <div class="mini-list">
+            <div class="row"><span class="t">Vector</span> batch_color.svg <span class="why2">sibling asset</span></div>
+            <div class="row"><span class="t">Doc</span> Brand sheet v0 <span class="why2">references this mark</span></div>
+          </div>
+        </div>
+        <div class="cell" style="border-right:0;">
+          <span class="ztag"><em>Z8</em> · RECORD</span>
+          <div class="actlog"><b>Jul 10</b> ingested from repo<br><b>Jul 10</b> parsed geometry · colors (L2)</div>
+          <div class="allmeta">All metadata (17) ▸ &nbsp;·&nbsp; Source XML ▸</div>
+        </div>
+      </div>
+    </article>
+  </section>
+
+  <!-- ============ 05 DATASET ============ -->
+  <section class="card-section" id="dataset">
+    <div class="card-head">
+      <span class="n">05</span><h2>Dataset — CSV</h2>
+      <span class="why">The hero is the data itself: sample rows under typed headers with per-column mini-stats. The primary verb is Query, in plain language.</span>
+    </div>
+    <article class="card" aria-label="Dataset detail card">
+      <div class="grid" style="grid-template-columns:1fr;">
+        <div class="cell" style="border-right:0;">
+          <span class="ztag"><em>Z2</em> · IDENTITY</span>
+          <div class="id-strip">
+            <span class="badge"><span class="glyph" aria-hidden="true">▤</span>Dataset · CSV</span>
+            <span class="chip">csv · utf-8</span><span class="chip">218 KB</span>
+            <span class="boost"><i class="on"></i><i class="on"></i><i class="on"></i><i></i><span>Boost L3</span></span>
+            <div class="title-line"><span class="title">orders_2026_q2.csv</span></div>
+            <div class="caption"><span class="ai">✦ AI</span> Shop order export, Apr–Jun 2026. One row per order line; money in USD cents; 3 fulfillment statuses.</div>
+            <div class="prov">Source <b>Shopify export</b> · Downloaded <b>Jul 1</b> · Ingested <b>Jul 1</b></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid" style="grid-template-columns:1fr;">
+        <div class="cell pad0" style="border-right:0;">
+          <span class="ztag"><em>Z1</em> · HERO</span>
+          <div style="overflow-x:auto">
+            <table class="dgrid">
+              <thead>
+                <tr>
+                  <th><span class="cname">order_id</span><span class="ctype">str</span><div class="colviz cat"><i style="height:100%"></i><i style="height:100%"></i><i style="height:100%"></i><i style="height:100%"></i><i style="height:100%"></i><i style="height:100%"></i><i style="height:100%"></i><i style="height:100%"></i></div><div class="cnull">1,284 unique · 0 null</div></th>
+                  <th><span class="cname">created_at</span><span class="ctype">date</span><div class="colviz"><i style="height:35%"></i><i style="height:48%"></i><i style="height:42%"></i><i style="height:60%"></i><i style="height:55%"></i><i style="height:74%"></i><i style="height:88%"></i><i style="height:100%"></i></div><div class="cnull">Apr 1 → Jun 30</div></th>
+                  <th><span class="cname">product</span><span class="ctype">cat</span><div class="colviz cat"><i style="height:100%"></i><i style="height:64%"></i><i style="height:38%"></i><i style="height:22%"></i><i style="height:12%"></i></div><div class="cnull">5 values · Magpod 48%</div></th>
+                  <th><span class="cname">qty</span><span class="ctype">int</span><div class="colviz"><i style="height:100%"></i><i style="height:34%"></i><i style="height:12%"></i><i style="height:5%"></i></div><div class="cnull">median 1</div></th>
+                  <th><span class="cname">total_cents</span><span class="ctype">int</span><div class="colviz"><i style="height:22%"></i><i style="height:58%"></i><i style="height:100%"></i><i style="height:72%"></i><i style="height:38%"></i><i style="height:18%"></i><i style="height:8%"></i><i style="height:4%"></i></div><div class="cnull">med $58 · max $412</div></th>
+                  <th><span class="cname">status</span><span class="ctype">cat</span><div class="colviz cat"><i style="height:100%"></i><i style="height:31%"></i><i style="height:9%"></i></div><div class="cnull">fulfilled 87%</div></th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr><td>BM-10412</td><td>2026-06-28 14:02</td><td>Magpod</td><td>1</td><td>5900</td><td>fulfilled</td></tr>
+                <tr><td>BM-10413</td><td>2026-06-28 16:47</td><td>Viga Light</td><td>2</td><td>13800</td><td>fulfilled</td></tr>
+                <tr><td>BM-10414</td><td>2026-06-29 09:15</td><td>Magpod</td><td>1</td><td>5900</td><td>pending</td></tr>
+                <tr><td>BM-10415</td><td>2026-06-29 11:52</td><td>T7 Case</td><td>1</td><td>3400</td><td>fulfilled</td></tr>
+                <tr><td>BM-10416</td><td>2026-06-30 08:20</td><td>Digital File</td><td>3</td><td>2700</td><td>fulfilled</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div style="padding:8px 12px;font-family:var(--mono);font-size:9.5px;color:var(--dim)">showing 5 of 1,284 rows · scroll for more</div>
+        </div>
+      </div>
+
+      <div class="grid" style="grid-template-columns:1fr;">
+        <div class="cell pad0" style="border-right:0;">
+          <span class="ztag" style="top:10px"><em>Z3</em> · FACTS</span>
+          <div class="facts">
+            <div class="fact"><div class="v">1,284<small> × 12</small></div><div class="k">Rows × Cols</div></div>
+            <div class="fact"><div class="v">99.2<small>%</small></div><div class="k">Complete</div></div>
+            <div class="fact"><div class="v">$76.4<small>k</small></div><div class="k">Sum · total</div></div>
+            <div class="fact"><div class="v">91<small> days</small></div><div class="k">Date span</div></div>
+            <div class="fact"><div class="v">218<small> KB</small></div><div class="k">Size</div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid" style="grid-template-columns:1fr;">
+        <div class="cell" style="border-right:0;">
+          <span class="ztag"><em>Z4</em> · ACTIONS + QUERY</span>
+          <div class="ask">
+            <input type="text" placeholder="Ask this table — “revenue by product in May?”" aria-label="Ask this table">
+            <button>Query</button>
+          </div>
+          <div class="exq">
+            <button>revenue by product in May</button>
+            <button>orders still pending &gt; 7 days</button>
+            <button>repeat customers</button>
+          </div>
+          <div class="actions" style="margin-top:14px">
+            <button class="btn converse">✦ Prompt</button>
+            <button class="btn">Quick chart</button>
+            <button class="btn">Export filtered</button>
+            <button class="btn">Open as table</button>
+            <button class="btn" aria-label="More actions">⋯</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid g2" style="grid-template-columns: 1.6fr 1fr;">
+        <div class="cell pad0">
+          <span class="ztag" style="top:12px"><em>Z5</em> · INTELLIGENCE</span>
+          <div class="tabs" role="tablist" data-tabs="dataset">
+            <button class="tab" role="tab" aria-selected="true" data-tab="schema">Schema</button>
+            <button class="tab" role="tab" aria-selected="false" data-tab="sum">Summary</button>
+            <button class="tab" role="tab" aria-selected="false" data-tab="anom">Anomalies<span class="ct">2</span></button>
+          </div>
+          <div class="panel active" data-panel="schema" role="tabpanel">
+            <div class="mini-list">
+              <div class="row"><span class="t">12 cols</span> 4 categorical · 3 numeric · 2 dates · 3 text <span class="why2">types inferred</span></div>
+              <div class="row"><span class="t">Keys</span> order_id unique → primary <span class="why2">customer_email → repeats</span></div>
+              <div class="row"><span class="t">Money</span> total_cents, shipping_cents in USD cents <span class="why2">✦ inferred from name+range</span></div>
+            </div>
+          </div>
+          <div class="panel" data-panel="sum" role="tabpanel">
+            <p style="font-size:13px;margin:0;line-height:1.7">Q2 order lines. Magpod carries ~half of volume; fulfillment runs 87% complete with a small pending tail at quarter-end. Median order $58.</p>
+          </div>
+          <div class="panel" data-panel="anom" role="tabpanel">
+            <div class="mini-list">
+              <div class="row"><span class="t">Nulls</span> ship_city empty on 9 digital orders <span class="why2">expected — digital</span></div>
+              <div class="row"><span class="t">Outlier</span> BM-10231 total $412 (4× p99) <span class="why2">verify</span></div>
+            </div>
+          </div>
+        </div>
+        <div class="cell" style="border-right:0;">
+          <span class="ztag"><em>Z6</em> · CONTEXT</span>
+          <p class="microlabel">Tags</p>
+          <div class="tagrow">
+            <span class="tag">shop</span><span class="tag">q2</span>
+            <span class="tag auto"><i></i>orders</span>
+            <button class="tag add">+ tag</button>
+          </div>
+          <div class="notefield"><b>Column note</b> — “total_cents includes shipping; don’t double-count with shipping_cents.” Notes on columns compound: future queries read them.</div>
+        </div>
+      </div>
+
+      <div class="grid g2" style="grid-template-columns: 1.6fr 1fr;">
+        <div class="cell">
+          <span class="ztag"><em>Z7</em> · CONNECTIONS</span>
+          <div class="mini-list">
+            <div class="row"><span class="t">Dataset</span> orders_2026_q1.csv <span class="why2">same schema · prior quarter</span></div>
+            <div class="row"><span class="t">Doc</span> Q2 recap draft <span class="why2">cites these numbers</span></div>
+          </div>
+        </div>
+        <div class="cell" style="border-right:0;">
+          <span class="ztag"><em>Z8</em> · RECORD</span>
+          <div class="actlog"><b>Jul 1</b> ingested · schema inferred (L2)<br><b>Jul 1</b> column stats · anomalies (L3)</div>
+          <div class="allmeta">All metadata (22) ▸ &nbsp;·&nbsp; dialect: comma · quoted · header ✓</div>
+        </div>
+      </div>
+    </article>
+  </section>
+
+  <!-- ============ 06 DOC ============ -->
+  <section class="card-section" id="doc">
+    <div class="card-head">
+      <span class="n">06</span><h2>Document — PDF</h2>
+      <span class="why">Reading view with page rail and outline; answers from Prompt cite page + passage; deadlines surface as Items.</span>
+    </div>
+    <article class="card" aria-label="Document detail card">
+      <div class="grid" style="grid-template-columns:1fr;">
+        <div class="cell" style="border-right:0;">
+          <span class="ztag"><em>Z2</em> · IDENTITY</span>
+          <div class="id-strip">
+            <span class="badge"><span class="glyph" aria-hidden="true">≡</span>Doc · PDF</span>
+            <span class="chip">pdf</span><span class="chip">412 KB</span>
+            <span class="boost"><i class="on"></i><i class="on"></i><i class="on"></i><i></i><span>Boost L3</span></span>
+            <div class="title-line"><span class="title">PETG laser settings — test matrix</span></div>
+            <div class="caption"><span class="ai">✦ AI</span> Internal test report: engraving parameters across 3 PETG stocks, with a recommended settings table and two open re-tests.</div>
+            <div class="prov">Author <b>Batch Studio</b> · Created <b>Jul 1</b> · Language <b>EN</b> · Ingested <b>Jul 1</b></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid" style="grid-template-columns:1fr;">
+        <div class="cell pad0" style="border-right:0;">
+          <span class="ztag"><em>Z1</em> · HERO</span>
+          <div class="doc-hero">
+            <div class="page-mock" role="img" aria-label="Page 1 preview: PETG laser settings test matrix">
+              <h4>PETG Laser Settings — Test Matrix</h4>
+              <div class="sub">Batch Studio · Rev 3 · July 2026</div>
+              <div class="pline w85"></div><div class="pline"></div><div class="pline w72"></div><div class="pline w60"></div>
+              <div class="ptable">
+                <div><span>stock</span><span>power</span><span>speed</span><span>result</span></div>
+                <div><span>3mm clear</span><span>35%</span><span>20%</span><span>clean</span></div>
+                <div><span>3mm smoke</span><span>35%</span><span>15%</span><span>re-test</span></div>
+                <div><span>5mm clear</span><span>48%</span><span>12%</span><span>clean</span></div>
+              </div>
+              <div class="pline w40" style="margin-top:12px"></div><div class="pline w85"></div><div class="pline w72"></div>
+            </div>
+            <div class="thumbs" aria-label="Pages">
+              <div class="thumb cur"><span>1</span></div>
+              <div class="thumb"><span>2</span></div>
+              <div class="thumb"><span>3</span></div>
+              <div class="thumb"><span>…6</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid" style="grid-template-columns:1fr;">
+        <div class="cell pad0" style="border-right:0;">
+          <span class="ztag" style="top:10px"><em>Z3</em> · FACTS</span>
+          <div class="facts">
+            <div class="fact"><div class="v">6</div><div class="k">Pages</div></div>
+            <div class="fact"><div class="v">1,842</div><div class="k">Words</div></div>
+            <div class="fact"><div class="v">9<small> min</small></div><div class="k">Read</div></div>
+            <div class="fact"><div class="v">3</div><div class="k">Tables</div></div>
+            <div class="fact"><div class="v">2</div><div class="k">Open items</div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid" style="grid-template-columns:1fr;">
+        <div class="cell" style="border-right:0;">
+          <span class="ztag"><em>Z4</em> · ACTIONS</span>
+          <div class="actions">
+            <button class="btn-primary">Read<span class="kbd">space</span></button>
+            <button class="btn converse">✦ Chat with doc</button>
+            <button class="btn">Annotate</button>
+            <button class="btn">Export text</button>
+            <button class="btn" aria-label="More actions">⋯</button>
+            <span style="font-size:10.5px;color:var(--dim);margin-left:auto">answers cite page + passage</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid g2" style="grid-template-columns: 1.6fr 1fr;">
+        <div class="cell pad0">
+          <span class="ztag" style="top:12px"><em>Z5</em> · INTELLIGENCE</span>
+          <div class="tabs" role="tablist" data-tabs="doc">
+            <button class="tab" role="tab" aria-selected="true" data-tab="sum">Summary</button>
+            <button class="tab" role="tab" aria-selected="false" data-tab="out">Outline</button>
+            <button class="tab" role="tab" aria-selected="false" data-tab="items">Items<span class="ct">2</span></button>
+          </div>
+          <div class="panel active" data-panel="sum" role="tabpanel">
+            <p style="font-size:13px;margin:0;line-height:1.7">Engrave tests across three PETG stocks converge on <b style="font-weight:400">35% power / 20% speed</b> for 3&nbsp;mm clear. Smoke-tint stock ghosts at matching settings and needs a slower pass; 5&nbsp;mm clear is solved. Two re-tests remain open.</p>
+            <ul class="sum-points">
+              <li>Recommended defaults land in the p.4 settings table.</li>
+              <li>Ghosting on smoke tint traced to speed, not power.</li>
+            </ul>
+          </div>
+          <div class="panel" data-panel="out" role="tabpanel">
+            <div class="outline-list">
+              1 · Method &amp; stock list <span class="pg">p.1</span><br>
+              2 · Results — 3mm clear <span class="pg">p.2</span><br>
+              3 · Results — smoke tint <span class="pg">p.3</span><br>
+              4 · Recommended settings <span class="pg">p.4</span><br>
+              5 · Open questions <span class="pg">p.5</span>
+            </div>
+          </div>
+          <div class="panel" data-panel="items" role="tabpanel">
+            <div class="sug" data-sug>
+              <span class="ic">☐</span>
+              <span><span class="what">Re-test smoke tint at 15% speed, 3mm stock</span><br><span class="receipt">todo · from <a href="#doc">p.5 “Open questions”</a></span> <span class="ok-note">→ todo created</span></span>
+              <span class="sug-acts"><button class="acc">Accept</button><button>Edit</button><button>Dismiss</button></span>
+            </div>
+            <div class="sug" data-sug>
+              <span class="ic">☐</span>
+              <span><span class="what">Verify fume extraction spec before production runs</span><br><span class="receipt">todo · from <a href="#doc">p.5</a></span> <span class="ok-note">→ todo created</span></span>
+              <span class="sug-acts"><button class="acc">Accept</button><button>Edit</button><button>Dismiss</button></span>
+            </div>
+          </div>
+        </div>
+        <div class="cell" style="border-right:0;">
+          <span class="ztag"><em>Z6</em> · CONTEXT</span>
+          <p class="microlabel">Tags</p>
+          <div class="tagrow">
+            <span class="tag">laser</span><span class="tag">petg</span>
+            <span class="tag auto"><i></i>test-report</span>
+            <button class="tag add">+ tag</button>
+          </div>
+          <div class="notefield"><b>Highlight</b> — p.4 table saved as a quotable memory; cited by the Q2 recap draft.</div>
+        </div>
+      </div>
+
+      <div class="grid g2" style="grid-template-columns: 1.6fr 1fr;">
+        <div class="cell">
+          <span class="ztag"><em>Z7</em> · CONNECTIONS</span>
+          <div class="mini-list">
+            <div class="row"><span class="t">Doc</span> laser-engrave-petg journal post <span class="why2">same topic · published</span></div>
+            <div class="row"><span class="t">Image</span> engrave_tests_grid.jpg <span class="why2">figure source</span></div>
+          </div>
+        </div>
+        <div class="cell" style="border-right:0;">
+          <span class="ztag"><em>Z8</em> · RECORD</span>
+          <div class="actlog"><b>Jul 1</b> ingested · text layer ✓ (L2)<br><b>Jul 1</b> summary · items · outline (L3)</div>
+          <div class="allmeta">All metadata (19) ▸ &nbsp;·&nbsp; Versions (2) ▸</div>
+        </div>
+      </div>
+    </article>
+  </section>
+
+  <!-- ============ RULES ============ -->
+  <section class="rules" id="rules">
+    <h3>What keeps sixteen families feeling like one product</h3>
+    <div class="rules-grid">
+      <div><div class="rk">R1</div><div class="rt">Zones never reorder. A module may be absent; its zone collapses. Nothing moves.</div></div>
+      <div><div class="rk">R2</div><div class="rt">One primary verb per family — Listen, Play, View, Query, Read — always first, always on spacebar.</div></div>
+      <div><div class="rk">R3</div><div class="rt">Facts are always the stat-block idiom: big light value, small tracked label. Four to six, never more.</div></div>
+      <div><div class="rk">R4</div><div class="rt">Intelligence tabs come from a fixed vocabulary — Transcript, Summary, Text, Items, Entities, Schema, Dependencies.</div></div>
+      <div><div class="rk">R5</div><div class="rt">Machine voice is always legible: ✦ marks AI captions, dotted chips mark auto-tags. Confirming promotes them.</div></div>
+      <div><div class="rk">R6</div><div class="rt">Every suggestion shows its receipt — the timestamp, page, or cell it came from — and nothing leaves without an accept.</div></div>
+      <div><div class="rk">R7</div><div class="rt">Same kit everywhere: block, stat, chip, tag, list row, tab bar, player shell. A new family is a composition, not new components.</div></div>
+      <div><div class="rk">R8</div><div class="rt">Unknown formats still get the full universal layer — provenance, tags, notes, prompt, share. Never a dead end.</div></div>
+    </div>
+    <p class="colophon">
+      mother · detail card system · proposal 01 — companion to <code>docs/mother/detail-card-system.md</code> and the research teardown in <code>docs/mother/detail-card-research.md</code>.<br>
+      Speaker/categorical colors <code>#e2711d · #3fa46e · #5e8fc7</code> validated for CVD separation and ≥3:1 contrast on <code>#221f1d</code>. Sample content is illustrative.
+    </p>
+  </section>
+</div>
+
+<script>
+  // deterministic pseudo-random (mulberry32) — keeps mock waveforms stable
+  function rng(seed) {
+    return function () {
+      seed |= 0; seed = (seed + 0x6D2B79F5) | 0;
+      let t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
+      t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+  }
+
+  function sizeCanvas(c, h) {
+    const dpr = window.devicePixelRatio || 1;
+    const w = c.clientWidth || c.parentElement.clientWidth;
+    c.width = w * dpr; c.height = h * dpr;
+    const ctx = c.getContext('2d');
+    ctx.scale(dpr, dpr);
+    return [ctx, w, h];
+  }
+
+  // --- voice waveform: bars colored by speaker segment, dim after playhead
+  function drawVoiceWave() {
+    const c = document.getElementById('wave-voice');
+    if (!c) return;
+    const [ctx, w, h] = sizeCanvas(c, 96);
+    ctx.clearRect(0, 0, w, h);
+    const r = rng(42);
+    const segs = [ // [startFrac, endFrac, color] — diarization lanes
+      [0.00, 0.16, '#e2711d'], [0.16, 0.24, '#3fa46e'], [0.24, 0.42, '#e2711d'],
+      [0.42, 0.55, '#3fa46e'], [0.55, 0.63, '#5e8fc7'], [0.63, 0.80, '#e2711d'],
+      [0.80, 0.88, '#3fa46e'], [0.88, 1.00, '#5e8fc7'],
+    ];
+    const n = Math.floor(w / 5), mid = h / 2, playFrac = 4.2 / 12.63;
+    let env = 0.4;
+    for (let i = 0; i < n; i++) {
+      const f = i / n;
+      env += (r() - 0.5) * 0.34; env = Math.max(0.12, Math.min(1, env));
+      const pause = r() < 0.055;
+      const amp = pause ? 0.05 : env * (0.55 + r() * 0.45);
+      const bh = Math.max(2, amp * (h - 14));
+      const seg = segs.find(s => f >= s[0] && f < s[1]) || segs[segs.length - 1];
+      ctx.fillStyle = seg[2];
+      ctx.globalAlpha = f <= playFrac ? 0.95 : 0.38;
+      ctx.fillRect(i * 5, mid - bh / 2, 3, bh);
+    }
+    // playhead
+    ctx.globalAlpha = 1;
+    ctx.fillStyle = '#efede6';
+    ctx.fillRect(playFrac * w, 4, 1.5, h - 8);
+  }
+
+  // --- track: generated artwork + thin waveform bars
+  function drawArt() {
+    const c = document.getElementById('art-track');
+    if (!c) return;
+    const dpr = window.devicePixelRatio || 1;
+    const s = c.parentElement.clientWidth;
+    c.width = s * dpr; c.height = s * dpr;
+    const ctx = c.getContext('2d'); ctx.scale(dpr, dpr);
+    // warm dusk gradient field + bloom rings — abstract "Magnolia" cover
+    const g = ctx.createLinearGradient(0, 0, 0, s);
+    g.addColorStop(0, '#3a2c22'); g.addColorStop(0.6, '#71401c'); g.addColorStop(1, '#1d1a17');
+    ctx.fillStyle = g; ctx.fillRect(0, 0, s, s);
+    const r = rng(7);
+    for (let i = 0; i < 5; i++) {
+      ctx.beginPath();
+      ctx.arc(s * (0.3 + r() * 0.4), s * (0.3 + r() * 0.3), s * (0.06 + i * 0.055), 0, Math.PI * 2);
+      ctx.strokeStyle = 'rgba(239,237,230,' + (0.28 - i * 0.045) + ')';
+      ctx.lineWidth = 1;
+      ctx.stroke();
+    }
+    ctx.fillStyle = 'rgba(255,149,5,0.85)';
+    ctx.beginPath(); ctx.arc(s * 0.46, s * 0.42, s * 0.022, 0, Math.PI * 2); ctx.fill();
+    // grain
+    for (let i = 0; i < s * 14; i++) {
+      ctx.fillStyle = 'rgba(239,237,230,' + r() * 0.05 + ')';
+      ctx.fillRect(r() * s, r() * s, 1, 1);
+    }
+  }
+  function buildThinwave() {
+    const el = document.getElementById('thinwave');
+    if (!el) return;
+    const r = rng(19), n = 64, played = Math.floor(n * (67 / 222));
+    for (let i = 0; i < n; i++) {
+      const bar = document.createElement('i');
+      bar.style.height = (12 + r() * 88) + '%';
+      if (i <= played) bar.className = 'played';
+      el.appendChild(bar);
+    }
+  }
+
+  // --- photo: warm abstract bench close-up stand-in (gradient blocks + grain + vignette)
+  function drawPhoto() {
+    const c = document.getElementById('photo-hero');
+    if (!c) return;
+    const [ctx, w, h] = sizeCanvas(c, 300);
+    const r = rng(11);
+    const g = ctx.createLinearGradient(0, 0, w, h);
+    g.addColorStop(0, '#453a2e'); g.addColorStop(0.45, '#6b5138'); g.addColorStop(1, '#332a21');
+    ctx.fillStyle = g; ctx.fillRect(0, 0, w, h);
+    // walnut grain streaks
+    for (let i = 0; i < 26; i++) {
+      const y = r() * h;
+      ctx.strokeStyle = 'rgba(20,14,9,' + (0.08 + r() * 0.12) + ')';
+      ctx.lineWidth = 1 + r() * 2.5;
+      ctx.beginPath(); ctx.moveTo(0, y);
+      ctx.bezierCurveTo(w * 0.3, y + (r() - 0.5) * 26, w * 0.7, y + (r() - 0.5) * 26, w, y + (r() - 0.5) * 14);
+      ctx.stroke();
+    }
+    // brass inserts — out-of-focus warm discs
+    [[0.68, 0.38, 34], [0.79, 0.62, 26], [0.30, 0.70, 20]].forEach(([x, y, rad]) => {
+      const rg = ctx.createRadialGradient(w * x, h * y, 2, w * x, h * y, rad);
+      rg.addColorStop(0, 'rgba(228,183,105,0.95)');
+      rg.addColorStop(0.7, 'rgba(168,135,79,0.55)');
+      rg.addColorStop(1, 'rgba(168,135,79,0)');
+      ctx.fillStyle = rg;
+      ctx.beginPath(); ctx.arc(w * x, h * y, rad, 0, Math.PI * 2); ctx.fill();
+    });
+    // vignette + grain
+    const v = ctx.createRadialGradient(w / 2, h / 2, h * 0.3, w / 2, h / 2, w * 0.75);
+    v.addColorStop(0, 'rgba(0,0,0,0)'); v.addColorStop(1, 'rgba(10,8,6,0.55)');
+    ctx.fillStyle = v; ctx.fillRect(0, 0, w, h);
+    for (let i = 0; i < w * 6; i++) {
+      ctx.fillStyle = 'rgba(239,237,230,' + r() * 0.04 + ')';
+      ctx.fillRect(r() * w, r() * h, 1, 1);
+    }
+  }
+
+  // --- tabs (per card)
+  document.querySelectorAll('[data-tabs]').forEach(bar => {
+    const scope = bar.parentElement;
+    bar.addEventListener('click', e => {
+      const btn = e.target.closest('.tab'); if (!btn) return;
+      bar.querySelectorAll('.tab').forEach(t => t.setAttribute('aria-selected', t === btn ? 'true' : 'false'));
+      scope.querySelectorAll('.panel').forEach(p =>
+        p.classList.toggle('active', p.dataset.panel === btn.dataset.tab));
+    });
+  });
+
+  // --- vector background toggle
+  const stage = document.getElementById('vecstage');
+  if (stage) stage.querySelector('.bg-toggle').addEventListener('click', e => {
+    const btn = e.target.closest('button'); if (!btn) return;
+    stage.className = 'vec-stage ' + btn.dataset.bg;
+    stage.querySelectorAll('.bg-toggle button').forEach(b => b.setAttribute('aria-pressed', b === btn ? 'true' : 'false'));
+  });
+
+  // --- suggestion accept/dismiss demo
+  document.querySelectorAll('[data-sug]').forEach(sug => {
+    sug.querySelectorAll('.sug-acts button').forEach(btn => {
+      btn.addEventListener('click', () => {
+        if (btn.classList.contains('acc')) sug.classList.add('done');
+        else if (btn.textContent === 'Dismiss') { sug.style.opacity = '0.3'; sug.querySelector('.sug-acts').remove(); }
+      });
+    });
+  });
+
+  function drawAll() { drawVoiceWave(); drawArt(); drawPhoto(); }
+  buildThinwave();
+  drawAll();
+  let rsz; addEventListener('resize', () => { clearTimeout(rsz); rsz = setTimeout(drawAll, 120); });
+</script>
+
+</body>
+</html>
