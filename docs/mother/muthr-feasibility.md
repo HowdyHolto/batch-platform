@@ -37,6 +37,136 @@ Three configurations, in order of preference:
 
 Legend: 🅐 browser · 🅑 studio box · 🅒 metered · ★ = I'd build this with high confidence today · ◐ = workable, needs integration effort · ⚠ = genuinely hard or gated (noted why).
 
+### Voice
+| Feature (from the card) | How | Lane | Verdict |
+|---|---|---|---|
+| Waveform + playback | WebCodecs/ffmpeg-derived peaks (Web Audio `decodeAudioData` OOMs on 1h files — 1.27GB PCM) rendered on canvas | 🅐 | ★ |
+| Transcription | whisper.cpp (Metal) / faster-whisper **large-v3-turbo**; 1h memo ≈ 2–8 min on Mac/3060, coffee-break on CPU | 🅑 | ★ |
+| Diarization (speaker-colored waveform) | **sherpa-onnx** (Apache-2.0, 45MB models, CPU-fine, zero account gating) default; pyannote community-1 as the higher-accuracy option (free, one-time HF gate) | 🅑 | ★ |
+| Speaker naming + voiceprints | ECAPA-TDNN embeddings (Apache-2.0, 192-d) → pgvector cosine; enroll 3–5 clips/person, confirm-loop UX; ~90–95% top-1 suggestion accuracy cross-mic | 🅑 | ★ |
+| Summary · Items · Entities (+ receipts) | Claude Haiku (cents) or local Qwen2.5-14B via Ollama at ~80–90% of Haiku quality | 🅒 or 🅑 | ★ |
+| Calendar/todo suggestion chips | Own UI + LLM extraction with timestamp receipts | 🅐+🅒/🅑 | ★ |
+| Share clip (time range) | ffmpeg `-c copy` on box; ffmpeg.wasm in browser for small files | 🅑/🅐 | ★ |
+| Transcript search | Postgres FTS on segments (Supabase) | already-owned | ★ |
+
+### Track / Sample
+| Feature | How | Lane | Verdict |
+|---|---|---|---|
+| ID3 + artwork | music-metadata parse in browser | 🅐 | ★ |
+| Fingerprint → identify | fpcalc/Chromaprint (LGPL) on box → **AcoustID + MusicBrainz** (free APIs, key signup only) | 🅑 + free API | ◐ |
+| BPM / key | aubio or Essentia on box (essentia.js exists for browser) | 🅑 (🅐 possible) | ◐ |
+| Playback / queue / loop audition | Native audio element | 🅐 | ★ |
+
+### Image / Screenshot
+| Feature | How | Lane | Verdict |
+|---|---|---|---|
+| Zoomable hero, EXIF + GPS strip | exifr (MIT, 22KB — dormant since 2021 but format-stable) | 🅐 | ★ |
+| Map chip | Leaflet + OSM tiles (free) | 🅐 | ★ |
+| Palette + same-palette search | Canvas quantization (~30 lines) + color distance in SQL | 🅐 | ★ |
+| OCR (screenshot first-class) | tesseract.js in browser (fine on clean UI text); PaddleOCR on box for photos/tables | 🅐 → 🅑 | ★ |
+| Objects/scenes auto-tags | CLIP zero-shot via transformers.js (90–150MB model, cached, self-hosted weights) or box; Claude vision as quality tier | 🅐/🅑 (🅒 optional) | ◐ |
+| Faces → people | Local-only face embeddings on box (privacy: never cloud) | 🅑 | ◐ ⚠ consent UX first |
+| Near-duplicate detection | pHash in browser/box + pgvector | 🅐/🅑 | ★ |
+| Crop/rotate/export sizes | Canvas in browser; libvips/sharp on box for batch | 🅐/🅑 | ★ |
+
+### Vector
+| Feature | How | Lane | Verdict |
+|---|---|---|---|
+| Render + bg toggle + ∞ zoom | Native SVG | 🅐 | ★ |
+| Geometry/color/font facts | Parse the XML directly | 🅐 | ★ |
+| Export PNG @1×/2×/4× | Canvas rasterize | 🅐 | ★ |
+| Optimize/copy SVG | svgo (browser build) | 🅐 | ★ |
+
+### Video
+| Feature | How | Lane | Verdict |
+|---|---|---|---|
+| Probe + browser-safe verdict | mediainfo.js (BSD-2, chunked — multi-GB files probe fine client-side) against a baked support matrix | 🅐 | ★ |
+| Thumbnails + storyboard sprites | `<video>`+canvas seek-grab for playable codecs; WebCodecs for speed; box ffmpeg for HEVC/HDR originals | 🅐 → 🅑 | ★ |
+| Web-safe proxy (H.264+AAC, tone-mapped) | Box ffmpeg (NVENC/VideoToolbox); *not* browser (1GB+ files, 10–20× slower in wasm) | 🅑 | ★ |
+| HLS instant-seek rendition | Box ffmpeg → R2 | 🅑 | ◐ |
+| Transcript + diarization | Same audio stack as voice, on extracted track | 🅑 | ★ |
+| Auto-chapters / scenes | PySceneDetect (BSD-3) + topic pass | 🅑 | ◐ |
+| Pause-frame OCR / frame text search | tesseract.js on grabbed frames (browser) or box batch over keyframes | 🅐/🅑 | ◐ |
+| Visual b-roll search | CLIP embeddings per scene → pgvector | 🅑 | ◐ |
+| Clip/trim (fast + exact), rotate-fix, audio extract, captions burn, GIF/webp | Box ffmpeg one-shots; browser ffmpeg.wasm for ≤1GB quick jobs (2GB hard wasm cap) | 🅑 (🅐 small) | ★ |
+| Timecoded notes (dual representation) | Own UI + schema | 🅐 | ★ |
+
+### 3D Model
+| Feature | How | Lane | Verdict |
+|---|---|---|---|
+| Orbit viewer (STL/OBJ/PLY/GLB) | three.js loaders (MIT) | 🅐 | ★ |
+| 3MF view + plate/settings free lunch | JSZip/fflate unwrap (thumbnails + `Metadata/*.config`) + geometry via 3MFLoader — **Bambu/Prusa project 3MFs need own parse** (Production extension unsupported by the stock loader) | 🅐 | ◐ |
+| STEP/IGES → mesh | Browser: occt-import-js (LGPL, ~10MB wasm, v0.0.x — workable); box: cascadio/CadQuery for batch + quality | 🅐/🅑 | ◐ |
+| Mesh facts (dims/volume/watertight/shells) | Cheap stats in JS + **manifold-3d** (Apache-2.0, active) for authoritative manifoldness/volume; trimesh on box for batch | 🅐/🅑 | ★ |
+| Repair | manifold `Merge` for slightly-broken meshes; trimesh/Blender pipeline on box for trashed ones | 🅐 → 🅑 | ◐ |
+| Wireframe/section/measure/dims overlay | three.js (own code) | 🅐 | ★ |
+| Pinned 3D annotations | Own UI (xyz + camera pose in schema) | 🅐 | ★ |
+| Batch thumbnails | F3D CLI headless (BSD-3; reads meshes *and* STEP) | 🅑 | ★ |
+| Auto-orient | Tweaker-3 (GPL-3, stale-but-stable 2021) | 🅑 | ◐ |
+| Slice → time/filament estimate | PrusaSlicer CLI (AGPL — private subprocess use unconditional) | 🅑 | ★ |
+| Shape similarity search | OpenShape-class embeddings | 🅑 | ⚠ research-grade; defer |
+| `.f3d` / `.sldprt` | Embedded thumbnail + metadata only; geometry needs Autodesk APS (cloud) or commercial SDKs — **policy: open-in-app + export-STEP nudge** | 🅐 peek / 🅒 optional | ⚠ by design |
+
+### G-code
+| Feature | How | Lane | Verdict |
+|---|---|---|---|
+| Header/footer parse (all facts) | Pure text parse of first+last 64KB via `File.slice` — fully client-side, any file size | 🅐 | ★ |
+| Embedded thumbnail | Base64 block extraction in browser | 🅐 | ★ |
+| Toolpath viewer + layer slider | gcode-preview (MIT) — **prototype at 50–100MB before committing**; decimate/cap layers as fallback | 🅐 | ◐ |
+| Settings diff | Text diff of `key = value` dumps | 🅐 | ★ |
+| Cost per unit | Arithmetic + filament price table | 🅐 | ★ |
+| Compatibility verdict | Own printer registry (Supabase table) checked client-side | 🅐 | ★ |
+| Honest re-estimate | klipper_estimator (MIT; **repo archived 1/2026 — pin the binary**) | 🅑 | ◐ |
+| Pause@layer / bounded temp edit | Line-based rewrite (browser or box), re-estimate after | 🅐/🅑 | ★ |
+| Send-to-printer + outcome capture | Box connectors: Moonraker HTTP/WS, OctoPrint REST, Bambu FTPS/MQTT (LAN-mode caveats on new firmware) | 🅑 | ★ |
+
+### Deck
+| Feature | How | Lane | Verdict |
+|---|---|---|---|
+| Text/notes/media extraction (pptx) | JSZip + OOXML parse in browser | 🅐 | ★ |
+| Slide rendering (the one true server job) | LibreOffice headless via **Gotenberg** (MIT wrapper) with Carlito/Caladea/brand fonts baked in; render PDF once → rasterize pages | 🅑 | ★ |
+| Per-slide search index (+OCR fallback) | Parsed text + tesseract on rendered PNGs | 🅑 | ★ |
+| Fonts verdict | Deck font inventory vs box font list | 🅑 | ★ |
+| Version-family clustering | pHash slide thumbs + text shingling | 🅑 | ◐ |
+| Google Slides | First-party APIs (structured text, per-slide PNG, exports) — free quota | free API | ★ |
+| Keynote | `keynote-parser` best-effort text + embedded preview (browser) + **Mac-hand AppleScript export (verified alive in current macOS)** | 🅐 peek + 🅑 Mac | ◐ |
+| Present mode / slide→PNG / harvest→PDF | Browser over rendered renditions; pdf-lib compose | 🅐 | ★ |
+
+### Documents (redline) + Text
+| Feature | How | Lane | Verdict |
+|---|---|---|---|
+| Reading view (docx→HTML) | mammoth browser build (BSD-2) — semantic, fast | 🅐 | ★ |
+| Clean/Redline/Original triple render | pandoc `--track-changes` on box; or own `w:ins`/`w:del` OOXML parser in browser (JSZip + ~200 lines) | 🅑 (🅐 buildable) | ★ |
+| Comments with anchored ranges | Raw OOXML parse (`commentRangeStart/End`) | 🅐/🅑 | ★ |
+| Pixel-true "what the client saw" | LibreOffice→PDF on box | 🅑 | ★ |
+| Changes digest, contract entities, obligations→Items | LLM over author-attributed spans (Claude Haiku or local 14B) | 🅒 or 🅑 | ★ |
+| Which-version-went-out | Content hashing + correlation (own code) | 🅐 | ★ |
+| Tables→CSV, images out, split by heading | python-docx/pandoc box; much also browser-side | 🅐/🅑 | ★ |
+| `.pages` | Bundled preview harvest (browser) + Mac hand | 🅐 + 🅑 Mac | ◐ |
+| Google Docs snapshot-at-ingest | Drive/Docs APIs (free quota; md export since 2024, 10MB cap → docx fallback) | free API | ★ |
+
+### Dataset / Database
+| Feature | How | Lane | Verdict |
+|---|---|---|---|
+| Sample grid + column stats + histograms | **DuckDB-WASM** (MIT, ~8MB, `SUMMARIZE`) — the single best browser win in the system | 🅐 | ★ |
+| Ask-this-table (NL→SQL) | LLM writes SQL (schema+samples in prompt), DuckDB-WASM executes locally — data never leaves, only schema does; fully-local option via Ollama | 🅐+🅒/🅑 | ★ |
+| Quick chart / export filtered | Own UI over DuckDB results | 🅐 | ★ |
+| Open .sqlite read-only | official SQLite WASM (public domain) | 🅐 | ★ |
+| xlsx | SheetJS CE (Apache-2.0 — pin from their CDN registry) or exceljs (MIT) | 🅐 | ★ |
+
+### Universal layer
+| Feature | How | Lane | Verdict |
+|---|---|---|---|
+| Format sniffing, hashing, dedupe | file-type/magic bytes + SHA-256 (WebCrypto) in browser at upload; libmagic on box | 🅐/🅑 | ★ |
+| Renditions store + CDN | R2 (already owned, zero egress) | owned | ★ |
+| Queue + workers | pgmq on Supabase (included) + studio-box poller via Supavisor session mode, outbound-only | owned + 🅑 | ★ |
+| Text embeddings / semantic related | MiniLM/bge-small ONNX int8 on box CPU (1k chunks ≈ seconds) → pgvector (included in Supabase) | 🅑 + owned | ★ |
+| Captions/summaries at scale | Claude Haiku with Batch API; local LLM for the privacy lane | 🅒 or 🅑 | ★ |
+| Converse (chat with artifact) | Claude API with artifact context; answers cite receipts (own retrieval) | 🅒 | ★ |
+| PDF render/text/outline | pdf.js (Apache-2.0) | 🅐 | ★ |
+| Web-clip freezing | monolith (CC0) on box; readability for reader view | 🅑 | ★ |
+| Activity log, lineage, suggestions | Plain schema + UI — no exotic tech anywhere | owned | ★ |
+
 <!-- MATRIX -->
 
 ## 3. What you already pay for — and what it covers
@@ -48,6 +178,15 @@ Legend: 🅐 browser · 🅑 studio box · 🅒 metered · ★ = I'd build this 
 <!-- MONEY -->
 
 ## 5. Build order (confidence-first)
+
+Ordered by confidence × payoff, not by card. Each step ships something visible.
+
+1. **Browser-only cards first — no infra at all.** G-code (header parse + embedded thumbnail + viewer), dataset (DuckDB-WASM grid/stats/histograms), vector, image EXIF/palette, gcode settings-diff, sqlite browser, pdf.js reader, mammoth reading view, JSZip free-lunch extraction (3MF plates/settings, pptx text/media, docx media, .pages previews). This is 6 of 11 cards at real usefulness with **zero services beyond what exists** — and it's all ★-confidence code I can write now.
+2. **Schema + queue.** `artifacts`/`renditions`/`enrichments`/`derived_from`/`suggestions` tables, pgmq queue, activity log (machine actors included). Still no new spend — it's the Supabase you have.
+3. **The studio box, phase 1 (the Mac you own).** Worker polling pgmq outbound-only: ffmpeg probe/proxy/thumbnails, whisper.cpp Metal transcription, sherpa-onnx diarization, ECAPA voiceprints, MiniLM embeddings, Gotenberg/LibreOffice deck+doc rendering with fonts, F3D thumbnails, PrusaSlicer estimates, monolith clipping — and the **Mac hand** (Keynote/Pages AppleScript export). Voice/video/deck/doc cards come alive.
+4. **LLM layer, metered.** Haiku for captions/summaries/entities/items with per-artifact cost logging and per-source boost rules; Batch API for backfills. Add the Ollama lane later if a GPU box arrives or privacy demands it.
+5. **Printer connectors.** Moonraker/OctoPrint first (open HTTP), Bambu after; outcomes write back to gcode/model cards.
+6. **Prototype-before-promising list** (flagged by verification): gcode-preview at 50–100MB · Bambu Production-extension 3MF parse · browser Whisper on non-WebGPU machines · occt-import-js on big STEP assemblies. Each has a fallback already named above.
 
 <!-- BUILD_ORDER -->
 
