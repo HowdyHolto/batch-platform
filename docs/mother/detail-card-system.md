@@ -7,7 +7,7 @@
 
 ## 1. The problem
 
-mother ingests everything — voice memos, music, samples, photos, screenshots, vectors, videos, PDFs, notes, spreadsheets, databases, project files, archives, bookmarks. When you open any one of those artifacts, you land on a **detail card**.
+mother ingests everything — voice memos, music, samples, photos, screenshots, vectors, videos, PDFs, word-processing docs, decks, notes, spreadsheets, databases, 3D models, gcode, project files, archives, bookmarks. When you open any one of those artifacts, you land on a **detail card**.
 
 Two failure modes to avoid:
 
@@ -67,6 +67,8 @@ The interactive preview. Waveform, player, zoomable image, schema explorer, file
 ### Z3 — Facts (type module)
 4–6 stat blocks in the homepage idiom (big light number, small uppercase label). These are *chosen per type* — the facts a human actually asks about. Tappable facts filter the library (tap `BPM 92` → other 90–94 BPM material).
 
+One fact slot per family is reserved for a **verdict** — a precomputed ✓/⚠ answer to "will this work where I'm about to use it," checked against a registry MUTHR keeps: video *browser-safe?* (browser matrix) · gcode *matches printer?* (printer registry) · deck *renders clean?* (font inventory) · model *printable?* (geometry analysis) · wordproc *terms stable?* (pending-change scan). Verdicts earn their slot because they prevent the family's worst failure (a 6-hour misprint, a client deck with substituted fonts).
+
 ### Z4 — Actions (universal + type verbs)
 - **Primary verb** — one per type, always the same position: Listen / Play / View / Watch / Read / Query / Open. Spacebar triggers it.
 - **Universal verbs** — Prompt (chat), Share, Boost, Add-to (project/collection), Export/Download, Open-in, Archive.
@@ -82,8 +84,9 @@ Everything the machine extracted, in tabs drawn from a **fixed vocabulary** — 
 | **Text** | OCR / extracted raw text, copyable | image, screenshot, PDF, video frames |
 | **Items** | detected todos, calendar events, follow-ups, decisions — each with accept/dismiss | voice, video, docs, email |
 | **Entities** | people, places, orgs, products, dates | anything with content |
-| **Schema** | tables, columns, types, stats | dataset, database, spreadsheet |
-| **Dependencies** | linked assets, fonts, samples, referenced files | project files, code, archives |
+| **Schema** | tables, columns, types, stats — incl. parsed settings dumps (gcode config, 3MF profiles) | dataset, database, spreadsheet, gcode, model |
+| **Dependencies** | linked assets, fonts, samples, referenced files | project files, code, archives, decks |
+| **Changes** | version-to-version diffs, digestible: redline digest, settings diff, slide diff — always author/source-attributed | wordproc docs, decks, gcode, project files |
 
 ### Z6 — Context & capture (universal)
 - **Tags** — user tags and auto tags, visually distinct (auto tags carry a confidence dot; confirming one promotes it). One-tap add.
@@ -226,8 +229,11 @@ Patterns marked ▸ cite an app precedent. Their evidence status (verified / obs
 - **Intelligence tabs:** Transcript (timestamped, diarized if speech) · Summary · Items · Entities (faces/objects/scenes) · Text (on-screen OCR — critical for screen recordings).
 - **Modules:** auto-chapters from scene/topic detection; **timecoded comments/notes** ▸(Frame.io — a note pinned to 02:14, not to the file).
 - **Type verbs:** Clip & share range · Extract frame · Extract audio.
+- *Deep-dive (hero mechanics, storyboard sprites, manipulation verbs, capability stack): [`detail-cards-wave2.md`](./detail-cards-wave2.md).*
 
 ### 5.8 Document (`doc`) — PDF, Word, Pages
+*Subkinds: `pdf` (fixed layout) and `wordproc` (docx/gdoc/odt/pages/rtf — editable, versioned, redlined). The wordproc modules (clean/redline toggle, tracked-changes digest, comments) are specced in the [wave-2 deep-dive](./detail-cards-wave2.md).*
+
 - **Hero:** cover page + page-thumbnail rail ▸(Acrobat/Preview); toggle to continuous **reading view**. Heterogeneous formats normalize to **one canonical render pipeline** per family — docx/pptx/rtf render through the same PDF-like pipeline rather than bespoke viewers ▸(Acrobat AI converts DOCX/PPTX/TXT/RTF to PDF before chat).
 - **Facts:** pages · words · author · created/modified · language · format.
 - **Primary verb:** **Read**.
@@ -258,41 +264,73 @@ Patterns marked ▸ cite an app precedent. Their evidence status (verified / obs
 - **Intelligence tabs:** Schema · Summary · Dependencies (cross-table relations).
 - **Type verbs:** Browse table · Run SQL · Export table → dataset artifact.
 
-### 5.12 Project file (`project`) — the maker family
-*Subkinds: design (.fig/.psd/.ai/.sketch), DAW (.als/.logicx/.flp), CAD (.f3d/.step/.dwg), 3D-print (.3mf/.stl/.gcode), video-edit (.prproj/.fcpbundle).*
+### 5.12 Project file (`project`) — native app projects
+*Subkinds: design (.fig/.psd/.ai/.sketch), DAW (.als/.logicx/.flp), parametric CAD (.f3d/.sldprt/.blend), video-edit (.prproj/.fcpbundle). Exchange geometry (STL/STEP/3MF) and sliced gcode are their own families now — §5.13/§5.14 — because their jobs, viewers, and pipelines differ; a `derived_from` edge keeps the chain connected (f3d → 3mf → gcode → print).*
 
-- **Hero:** best embedded render/thumbnail; **STL/3MF/STEP get a real orbitable 3D viewer** ▸(Printables/MakerWorld — rotating the model *is* the preview); gcode gets a toolpath/layer preview.
+- **Hero:** best embedded render/thumbnail (native formats are mostly opaque — the thumbnail plus dependencies is the card).
 - **Facts (by subkind):**
   - design: artboards/pages · app + min version · linked assets · fonts
   - DAW: BPM · tracks · length · plugins used · sample refs
-  - CAD/3D: dimensions · volume · triangles · units
-  - gcode: est. print time · filament g/m · layer height · nozzle/bed temps ▸(slicer summary blocks)
+  - parametric CAD: parts · last export · app + version
 - **Primary verb:** **Open in [app]** (deep-link; mother knows the owning app + version).
 - **Intelligence tabs:** Dependencies (the killer module — which linked assets/fonts/samples exist *in mother*, which are missing) · Summary · Text (extractable layer/track names).
-- **Modules:** version/thumbnail history (visual diff of saves ▸ Fusion 360/Onshape version lists); print history for 3D (times printed, settings used, success notes — *the maker's lab notebook*).
-- **Type verbs:** Collect dependencies · Export preview · (3D) Send to slicer/printer.
-- **Capture:** build notes, settings that worked, client/project link.
+- **Modules:** version/thumbnail history (visual diff of saves ▸ Fusion 360/Onshape version lists); derived-artifact strip (the STEP/3MF/gcode exports minted from this project).
+- **Type verbs:** Collect dependencies · Export preview · Request export (via the Mac/app hand — see capability doc G10).
+- **Capture:** build notes, client/project link.
 
-### 5.13 Archive (`archive`) — zip, tar, dmg
+### 5.13 3D model (`model`) — meshes & exchange CAD
+*Subkinds: mesh (.stl/.obj/.3mf/.glb/.ply), cad-exchange (.step/.iges), scan. The studio family. Full spec: [wave-2 deep-dive](./detail-cards-wave2.md).*
+
+- **Hero:** real orbitable viewer ▸(Printables/MakerWorld — rotating the model *is* the preview; Sketchfab's inspector adds wireframe/material modes), ground shadow, dimension overlay toggle, section view.
+- **Facts:** dimensions (with unit confidence — STL has no units) · volume · triangles · watertight/printable? · shells · format.
+- **Primary verb:** **Orbit** (inspect).
+- **Intelligence tabs:** Schema→**Geometry** (analysis: manifold, wall thickness, overhangs) · Dependencies (3MF: plates, embedded settings) · Summary.
+- **Modules:** print history (times printed, settings, outcomes — *the maker's lab notebook*); derived-from strip (source project ↔ sliced gcode); makes/remix lineage for published designs.
+- **Type verbs:** Measure · Orient/scale (mint version) · Repair · Convert (STL↔3MF↔GLB, STEP→mesh) · Slice → gcode · Send to printer.
+- **Capture:** orientation notes, material notes, published-where links.
+
+### 5.14 G-code (`gcode`) — sliced print jobs
+*The terminal artifact of the design chain; reused for repeat production runs. Full spec: [wave-2 deep-dive](./detail-cards-wave2.md).*
+
+- **Hero:** layer/toolpath viewer with layer slider and feature coloring ▸(PrusaSlicer/Bambu preview); falls back to the slicer's embedded thumbnail at L1.
+- **Facts:** est. print time · filament g + cost · layer height · nozzle/temps · target printer/material · sliced-with.
+- **Primary verb:** **Print** (send to a named printer; requeue is the whole point).
+- **Intelligence tabs:** Schema→**Settings** (parsed slicer config, diffable against another gcode) · Dependencies (source 3MF/STL) · Summary.
+- **Modules:** compatibility check vs printer registry (bed volume, nozzle, material); **print outcomes** written back from the farm (success/fail/notes) — the artifact accrues a production record.
+- **Type verbs:** Reprint · Compare settings · Insert pause @ layer (mint version) · Re-estimate for printer.
+- **Capture:** batch notes ("the good batch"), cost-per-unit confirmations.
+
+### 5.15 Deck (`deck`) — presentations
+*Subkinds: pptx, keynote, gslides, web-deck (Pitch/Gamma/Canva links). New family — decks were missing from wave 1. Full spec: [wave-2 deep-dive](./detail-cards-wave2.md).*
+
+- **Hero:** cover slide + **slide-grid/filmstrip** ▸(SlideShare/Speaker Deck: the grid *is* the preview; per-slide deep links), arrow-key flip-through.
+- **Facts:** slides · aspect · theme/fonts · last edited · presented-to (from capture) · format.
+- **Primary verb:** **Present** (fullscreen flip-through of rendered slides).
+- **Intelligence tabs:** Text (per-slide text + speaker notes — searchable: *find the deck with that one slide*) · Summary (deck outline from titles) · Entities · Dependencies (embedded media, fonts).
+- **Modules:** per-slide thumbnails as anchors (notes/links pin to slide N); version strip ("which version did the client see").
+- **Type verbs:** Export PDF · Grab slide as image · Extract all images · Harvest slides (pick N slides → new deck/collection).
+- **Capture:** presented-to log, per-slide notes.
+
+### 5.16 Archive (`archive`) — zip, tar, dmg
 - **Hero:** expandable **file tree** with per-entry type icons and sizes; tap an entry → inline Quick-Look-style peek.
 - **Facts:** entries · unpacked size · compressed size (ratio) · encrypted? · format.
 - **Primary verb:** **Browse**.
 - **Type verbs:** Extract selected · **Ingest contents** (fan out entries into real artifacts, archive becomes their provenance parent) · Peek entry.
 
-### 5.14 Code / repo snapshot (`code`)
+### 5.17 Code / repo snapshot (`code`)
 - **Hero:** rendered README, else annotated file tree ▸(GitHub's repo page: README *is* the detail card).
 - **Facts:** languages (breakdown bar) · files · LOC · last commit · license.
 - **Primary verb:** **Browse**.
 - **Intelligence tabs:** Summary (what this project does) · Dependencies (manifests parsed) · Entities.
 - **Type verbs:** Open in editor · Copy clone path.
 
-### 5.15 Bookmark / web clip (`link`)
+### 5.18 Bookmark / web clip (`link`)
 - **Hero:** reader-mode capture (frozen at save time) with original screenshot toggle.
 - **Facts:** domain · saved date · read time · author/published · alive? (link-rot check).
 - **Primary verb:** **Read** (the frozen copy — mother owns the content even if the page dies).
 - **Intelligence tabs:** Summary · Entities · Items.
 
-### 5.16 Fallback (`blob`) — anything unrecognized
+### 5.19 Fallback (`blob`) — anything unrecognized
 Never a dead end: hex/text peek if plausible, full universal layer (provenance, tags, notes, prompt, share), and a visible path to support — "We don't understand `.xyz` yet — boost it anyway and mother will OCR/parse what it can."
 
 ---
@@ -368,8 +406,8 @@ Notes:
 | Tier | Families | Why first |
 |---|---|---|
 | **T1** | voice, screenshot, image, doc, text | Highest capture volume + highest enrichment payoff (transcripts, OCR, items). Proves the skeleton + boost ladder + suggestions loop. |
-| **T2** | track, video, dataset, link | Player/consumption patterns + the query hero. |
-| **T3** | vector, project, database, sample, archive, code | Deeper renderers (3D viewer, schema explorer) on a proven skeleton. |
+| **T2** | video, **model, gcode**, dataset, track, link | Player/consumption patterns + the query hero — and the studio families (model/gcode) that differentiate MUTHR, riding the mesh/gcode toolbelt (capability doc Horizon 2). |
+| **T3** | vector, project, database, sample, archive, code, **deck** | Deeper renderers on a proven skeleton. Deck can pull forward cheaply — it rides the same LibreOffice render farm the doc family already needs. |
 
 Every family not yet built renders as `blob` — full universal layer from day one, so nothing ingested is ever a dead end while its module is in the queue.
 
