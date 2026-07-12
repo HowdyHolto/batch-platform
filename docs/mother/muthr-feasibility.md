@@ -3,7 +3,18 @@
 > Every capability the eleven prototype cards promise, sorted by **where it can run** and **what it costs** — verified against licenses, browser reality, and current pricing (July 2026).
 > Companions: [`muthr-capability-gaps.md`](./muthr-capability-gaps.md) (what to build) · [`detail-cards-wave2.md`](./detail-cards-wave2.md) (why).
 
-<!-- HEADLINE -->
+## 0. Headline
+
+**Yes — effectively all of it is feasible, and none of it requires a new subscription.** Verified across four passes (browser/WASM libraries, local audio AI, existing-platform pricing, OSS licensing + hardware):
+
+1. **Six of the eleven cards reach real usefulness entirely in the browser** — g-code, dataset, vector, image, sqlite, PDF/doc reading — private by construction, $0, all ★-confidence code.
+2. **One always-on machine you probably already own** (an M-series Mac is ideal — it's also the only path to Keynote/Pages) covers everything heavier: ffmpeg, LibreOffice rendering, whisper transcription, diarization, voiceprints, embeddings, slicer estimates, printer connectors. No license blocks any of it for private use.
+3. **Your existing services already cover the platform primitives**: Supabase (queue via pgmq + pgvector, both included), R2 (renditions, $0 egress), Cloudflare Workers AI (transcription at **$0.03/hr**, embeddings ~free at your scale), Claude (summaries/entities at **~$0.01/artifact**, half that batched). Realistic total marginal cost at studio scale: **single-digit dollars per month.**
+4. **The genuinely uncovered item is exactly one**: Fusion 360 `.f3d` geometry translation — Autodesk's cloud API at ~$0.60/translation, or the manual policy already in the framework (open-in-app + export STEP alongside). Everything else labeled "paid" below is an optional quality tier, not a requirement.
+
+The privacy ordering holds: prefer browser → studio box → metered API, and the metered lane is gated by per-source boost rules with cost logged in the activity record.
+
+
 
 ## 1. The three lanes
 
@@ -31,7 +42,7 @@ Three configurations, in order of preference:
 
 **Worker ↔ Supabase plumbing (verified):** the box makes **outbound-only** TLS connections — no port forwarding, nothing exposed at the studio. Supabase direct connections are IPv6-only (most home ISPs aren't), so the worker connects through the **Supavisor pooler (IPv4 on every tier)**; queue = **pgmq** (the extension Supabase Queues is built on, included) with visibility-timeout polling — jobs are Postgres rows, crash-safe, surviving restarts by construction.
 
-<!-- LANES_DETAIL -->
+
 
 ## 2. Per-card feasibility matrix
 
@@ -167,15 +178,45 @@ Legend: 🅐 browser · 🅑 studio box · 🅒 metered · ★ = I'd build this 
 | Web-clip freezing | monolith (CC0) on box; readability for reader view | 🅑 | ★ |
 | Activity log, lineage, suggestions | Plain schema + UI — no exotic tech anywhere | owned | ★ |
 
-<!-- MATRIX -->
+
 
 ## 3. What you already pay for — and what it covers
 
-<!-- ALREADY_PAYING -->
+Verified July 2026 against official pricing pages.
+
+| MUTHR primitive | Covered by (owned) | Marginal cost |
+|---|---|---|
+| Job queue | **Supabase Queues (pgmq)** — included, jobs are Postgres rows | $0 |
+| Vector search | **Supabase pgvector** — included every tier (index ≤2,000 dims — fine: MiniLM 384, ECAPA 192) | $0 beyond DB disk |
+| Object storage + CDN for renditions | **Cloudflare R2** (already in use) | $0.015/GB-mo, **$0 egress**, 10GB free |
+| Transcription (cloud lane) | **Workers AI** `whisper-large-v3-turbo` | **$0.0005/min = $0.03/hr**; ~214 min/day rides the free daily neurons |
+| Embeddings (cloud lane) | Workers AI `bge-m3` | $0.012/M tokens (10k chunks ≈ $0.03, usually free-tier) |
+| LLM summarize/extract/converse | **Claude Haiku 4.5** ($1/$5 per MTok) | **≈ $0.01/artifact**; 1,000-artifact backfill ≈ **$5.20** via Batch (50% off); prompt-cache reads 0.1× |
+| Heavy jobs without a studio box | **Cloudflare Containers** on the $5 Workers plan (real Linux containers, ffmpeg-capable, scale-to-zero) | included quotas, per-second beyond — the cloud fallback if the box is down |
+| Headless screenshots/PDF of web clips | CF Browser Rendering | 10 min/day free, then $0.09/browser-hr |
+| Video delivery *if sharing at scale* | Cloudflare Stream | $5/1k min stored + $1/1k delivered — or DIY HLS on R2 at $0 egress |
+| App hosting | Netlify (as today) | hosting only — its functions are glue, not media workers |
+
+**Supabase tier caveats:** the free tier's 500MB database, 1GB storage, and 7-day auto-pause don't fit an always-on MUTHR — assume **Pro ($25/mo, likely already carried)**: 8GB disk, 100GB storage ($0.021/GB after), no pausing. **Edge Functions confirmed unable to run ffmpeg-class binaries** (256MB / 2s CPU) — they're the glue tier; real work happens on the box or in CF Containers.
+
+
 
 ## 4. Where money genuinely helps (and where it doesn't)
 
-<!-- MONEY -->
+**Money helps (small, optional):**
+- **Claude Haiku for the intelligence layer** — ~$0.01/artifact is cheaper than the electricity to match its quality locally; keep local Qwen-14B as the privacy lane, not the default. This is the one metered spend I'd actually turn on day one.
+- **A used RTX 3060 12GB (~$200–250 one-time)** if voice volume grows — flips transcription+diarization+local-LLM from coffee-break to minutes-fast, entirely private, no recurring cost.
+- **Autodesk APS (~$0.60/F3D translation)** only if the export-STEP-alongside habit proves annoying.
+- **AssemblyAI ($0.15/hr, diarization included)** only if sherpa-onnx/pyannote diarization disappoints on your real meeting audio — test local first.
+
+**Money doesn't help:**
+- **No transcription subscription** — Workers AI at $0.03/hr and whisper on the Mac both embarrass per-seat transcription products.
+- **No DAM/asset-management SaaS** — the entire point of MUTHR.
+- **No commercial CAD SDKs** (`.sldprt` geometry) — the preview+open-in-app policy costs $0 and covers the real jobs.
+- **No Cloudflare Stream until you're sharing video externally at volume** — private playback of proxies from R2 costs $0 egress.
+- **No new queue/orchestration service** — pgmq is included and correct.
+
+
 
 ## 5. Build order (confidence-first)
 
@@ -188,8 +229,17 @@ Ordered by confidence × payoff, not by card. Each step ships something visible.
 5. **Printer connectors.** Moonraker/OctoPrint first (open HTTP), Bambu after; outcomes write back to gcode/model cards.
 6. **Prototype-before-promising list** (flagged by verification): gcode-preview at 50–100MB · Bambu Production-extension 3MF parse · browser Whisper on non-WebGPU machines · occt-import-js on big STEP assemblies. Each has a fallback already named above.
 
-<!-- BUILD_ORDER -->
+
 
 ## 6. Verification notes & sources
 
-<!-- SOURCES -->
+Four verification passes, July 2026, all against primary sources (official repos, license files, vendor pricing/docs pages):
+
+1. **Browser/WASM** — ffmpeg.wasm (2GB wasm cap confirmed in FAQ; published core is GPL-built), mediainfo.js (BSD-2, chunked probing), WebCodecs support matrix, tesseract.js v7, transformers.js (WebGPU Whisper at/above realtime for base/small; `allowRemoteModels=false` confirmed for self-hosted weights), exifr (MIT, dormant 2021), three.js loaders (3MFLoader lacks the Production extension Bambu saves by default), occt-import-js (LGPL-2.1, v0.0.x), manifold-3d (Apache-2.0, active 2026), gcode-preview (MIT; 100MB unproven), DuckDB-WASM (MIT, v1.33), SQLite WASM (public domain), pdf.js, mammoth (BSD-2), JSZip/fflate, SheetJS CE (Apache-2.0, CDN-distributed). COOP/COEP on Netlify: supported via headers; only needed for threaded wasm.
+2. **Local audio AI** — whisper.cpp MIT (M2 Pro ≈ 5× realtime on large-v3); faster-whisper MIT (large-v3 batched: 13min audio in 17s on 8GB GPU); large-v3-turbo ≈ 6× faster within ~1–2% WER; pyannote community-1 (MIT code, free gated weights, offline after download; AMI DER 17.0); **sherpa-onnx** (Apache-2.0, ~45MB models, CPU-friendly, no gating); speechbrain ECAPA (Apache-2.0, EER 0.8% lab / plan for confirm-loop reality); Ollama structured outputs (schema-constrained JSON); MiniLM/bge-small ONNX int8 ≈ seconds per 1k chunks on CPU. Anchors: Deepgram $0.26/hr prerecorded, AssemblyAI $0.15/hr, OpenAI $0.36/hr.
+3. **Owned platforms** — Supabase free/Pro quotas + pause rules, pgmq + pgvector included, Edge Function limits (256MB/2s CPU — no native binaries); R2/Workers/Workers AI/Stream/Containers/Browser-Rendering pricing as tabulated; Claude Haiku 4.5 $1/$5 per MTok, Batch −50%, cache reads 0.1× (Haiku min cacheable prefix 4,096 tok); Autodesk APS Flex ~0.2 tokens (~$0.60) per simple-format translation.
+4. **Licenses + hardware** — full table in §1 lane notes: no license blocks private subprocess use; corrections captured (audiowaveform GPL-3, Tweaker-3 GPL-3, klipper_estimator archived 1/2026 — pin, cascadio MIT+OCCT-LGPL); Keynote AppleScript export verified alive through current macOS; studio-box configs benchmarked (M-series / $250 mini PC / +3060); pgmq-over-Supavisor session-mode confirmed as the outbound-only worker pattern (direct connections are IPv6-only without the IPv4 add-on).
+
+Full agent reports with per-claim URLs are preserved in the session transcripts; the load-bearing sources are linked inline throughout the companion docs.
+
+
