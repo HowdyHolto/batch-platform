@@ -105,7 +105,7 @@
     border: 1px dashed var(--faint2); padding: 2px 8px; letter-spacing: 0.04em;
   }
   .title-line { flex-basis: 100%; display: flex; flex-wrap: wrap; align-items: baseline; gap: 12px; }
-  .title { font-size: clamp(1.3rem, 2.6vw, 1.9rem); font-weight: 300; letter-spacing: -0.03em; line-height: 1.15; }
+  .title { font-size: clamp(1.3rem, 2.6vw, 1.9rem); font-weight: 300; letter-spacing: -0.03em; line-height: 1.15; overflow-wrap: anywhere; min-width: 0; }
   .title .edit { color: var(--dim); font-size: 11px; margin-left: 6px; }
   .caption { flex-basis: 100%; font-size: 12.5px; color: var(--dim); display: flex; gap: 8px; align-items: baseline; }
   .caption .ai { color: var(--saffron); font-family: var(--mono); font-size: 10px; white-space: nowrap; }
@@ -306,6 +306,89 @@
   .sum-points li { margin-bottom: 6px; }
   .sum-points li::marker { color: var(--bronze); }
 
+  /* verdict chip (universal) */
+  .verdict { display: inline-flex; align-items: center; gap: 7px; font-size: 11px; padding: 5px 10px; border: 1px solid rgba(135,233,177,0.4); color: var(--mint); flex-wrap: wrap; min-width: 0; max-width: 100%; }
+  .verdict.warn { border-color: rgba(255,149,5,0.45); color: var(--saffron); }
+  .verdict i { font-style: normal; font-family: var(--mono); font-size: 11px; }
+
+  /* video */
+  .vid-stage { position: relative; }
+  .vid-stage canvas { width: 100%; height: 300px; display: block; }
+  .vid-play { position: absolute; left: 50%; top: 45%; transform: translate(-50%,-50%); width: 58px; height: 58px; border-radius: 50%; background: rgba(204,88,3,0.92); color: var(--linen); font-size: 20px; display: grid; place-items: center; }
+  .vid-play:hover { background: var(--saffron); }
+  .scrub { padding: 10px 14px 4px; }
+  .scrub-bar { position: relative; height: 5px; background: var(--faint2); }
+  .scrub-bar .played { position: absolute; left: 0; top: 0; bottom: 0; width: 34%; background: var(--bronze); }
+  .scrub-bar .chap { position: absolute; top: -3px; width: 2px; height: 11px; background: var(--saffron); }
+  .scrub-under { display: flex; gap: 12px; align-items: center; margin-top: 8px; flex-wrap: wrap; }
+  .storyboard { display: flex; gap: 3px; padding: 10px 14px 14px; overflow-x: auto; }
+  .storyboard canvas { width: 88px; height: 50px; flex: none; border: 1px solid var(--faint); opacity: 0.75; }
+  .storyboard canvas.cur { opacity: 1; border-color: var(--saffron); }
+  .aiblock { border-top: 1px dashed var(--faint); padding: 12px 14px; font-size: 12.5px; display: flex; gap: 10px; align-items: baseline; }
+  .aiblock .ai { color: var(--saffron); font-family: var(--mono); font-size: 10px; white-space: nowrap; }
+
+  /* model */
+  .orbit-stage { position: relative; height: 300px; }
+  .orbit-stage canvas { width: 100%; height: 100%; display: block; cursor: grab; }
+  .viewer-toggles { position: absolute; top: 10px; left: 12px; display: flex; gap: 2px; }
+  .viewer-toggles button { font-family: var(--mono); font-size: 9px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--dim); border: 1px dashed var(--faint2); padding: 4px 8px; background: var(--bg); }
+  .viewer-toggles button[aria-pressed="true"] { color: var(--saffron); border-color: rgba(255,149,5,0.5); }
+  .hotspot { position: absolute; width: 20px; height: 20px; border-radius: 50%; background: var(--saffron); color: #221f1d; font-size: 11px; font-weight: 500; display: grid; place-items: center; }
+  .orbit-hint { position: absolute; right: 12px; bottom: 10px; font-family: var(--mono); font-size: 9.5px; color: var(--dim); }
+
+  /* gcode */
+  .gcode-stage { display: grid; grid-template-columns: 1fr 120px; }
+  .gcode-stage canvas { width: 100%; height: 290px; display: block; }
+  .layer-rail { border-left: 1px dashed var(--faint); padding: 14px 12px; display: flex; flex-direction: column; gap: 10px; }
+  .layer-rail input[type="range"] { writing-mode: vertical-lr; direction: rtl; flex: 1; accent-color: #ff9505; width: 20px; margin: 0 auto; }
+  .layer-num { font-family: var(--mono); font-size: 11px; color: var(--linen); text-align: center; font-variant-numeric: tabular-nums; }
+  .feat-legend { padding: 10px 14px; display: flex; gap: 8px; flex-wrap: wrap; border-top: 1px dashed var(--faint); }
+  .feat-legend button { display: inline-flex; align-items: center; gap: 7px; font-family: var(--mono); font-size: 10px; color: rgba(239,237,230,0.8); border: 1px dashed var(--faint2); padding: 4px 10px; }
+  .feat-legend button i { width: 10px; height: 3px; }
+  .feat-legend button[aria-pressed="false"] { opacity: 0.35; }
+  .feat-legend .t { font-family: var(--mono); font-size: 9.5px; color: var(--dim); margin-left: auto; align-self: center; }
+  .compat { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+  .compat .chk { font-size: 11px; color: rgba(239,237,230,0.8); border: 1px dashed var(--faint); padding: 5px 10px; }
+  .compat .chk b { color: var(--mint); font-weight: 400; font-family: var(--mono); }
+
+  /* deck */
+  .deck-hero { display: grid; grid-template-columns: minmax(0, 1fr) 108px; }
+  .slide-cover { margin: 18px; min-width: 0; min-height: clamp(160px, 24vw, 250px); background: #eae7de; color: #2a2724; padding: 7% 9%; display: flex; flex-direction: column; justify-content: center; box-shadow: 0 0 0 1px rgba(239,237,230,0.12); }
+  .slide-cover .kicker { font-size: 9px; letter-spacing: 0.22em; text-transform: uppercase; color: #8a6a48; margin-bottom: 10px; }
+  .slide-cover h4 { font-weight: 400; font-size: clamp(15px, 2.4vw, 24px); letter-spacing: -0.02em; margin: 0 0 8px; line-height: 1.15; }
+  .slide-cover .sub2 { font-size: 10px; color: #6b675f; }
+  .slide-rail { border-left: 1px dashed var(--faint); padding: 26px 10px 14px; display: flex; flex-direction: column; gap: 8px; overflow-y: auto; max-height: 320px; }
+  .s-thumb { aspect-ratio: 16/9; background: rgba(239,237,230,0.09); border: 1px solid var(--faint); position: relative; flex: none; }
+  .s-thumb.cur { border-color: var(--saffron); }
+  .s-thumb span { position: absolute; bottom: 2px; right: 4px; font-family: var(--mono); font-size: 8px; color: var(--dim); }
+  .s-thumb .bar { position: absolute; left: 12%; background: rgba(42,39,36,0.0); }
+  .s-thumb i { position: absolute; background: rgba(239,237,230,0.25); }
+  .slide-hit { display: grid; grid-template-columns: 64px 1fr; gap: 12px; align-items: center; padding: 9px 0; border-bottom: 1px dashed var(--faint); }
+  .slide-hit .st { aspect-ratio: 16/9; background: rgba(239,237,230,0.09); border: 1px solid var(--faint2); position: relative; }
+  .slide-hit .st span { position: absolute; bottom: 1px; right: 3px; font-family: var(--mono); font-size: 8px; color: var(--saffron); }
+  .slide-hit .tx { font-size: 12.5px; }
+  .slide-hit .tx .hl2 { background: rgba(255,149,5,0.14); border-bottom: 1px dashed rgba(255,149,5,0.6); padding: 0 2px; }
+
+  /* wordproc doc */
+  .markup-toggle { display: flex; gap: 2px; }
+  .markup-toggle button { font-family: var(--mono); font-size: 9px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--dim); border: 1px dashed var(--faint2); padding: 4px 9px; background: var(--bg); }
+  .markup-toggle button[aria-pressed="true"] { color: var(--saffron); border-color: rgba(255,149,5,0.5); }
+  .doc-read { margin: 16px 18px; background: #eae7de; color: #2a2724; padding: 26px 30px; font-size: 12px; line-height: 1.85; }
+  .doc-read h5 { font-size: 12px; font-weight: 500; margin: 0 0 10px; letter-spacing: 0.01em; }
+  .doc-read p { margin: 0 0 10px; }
+  .doc-read .clause { color: #8a8478; font-size: 9px; letter-spacing: 0.08em; margin-right: 8px; font-family: var(--mono); }
+  .ins, .del { padding: 0 1px; position: relative; }
+  .ins { border-bottom: 2px solid; }
+  .del { text-decoration: line-through; text-decoration-thickness: 1.5px; }
+  .ins.a1, .del.a1 { color: #a34d0e; border-color: #a34d0e; text-decoration-color: #a34d0e; }
+  .ins.a2, .del.a2 { color: #38648f; border-color: #38648f; text-decoration-color: #38648f; }
+  [data-markup="clean"] .del { display: none; }
+  [data-markup="clean"] .ins { border-bottom: 0; color: inherit; }
+  [data-markup="original"] .ins { display: none; }
+  [data-markup="original"] .del { text-decoration: none; color: inherit; }
+  .author-key { display: flex; gap: 14px; padding: 8px 18px 14px; font-size: 10.5px; color: var(--dim); }
+  .author-key i { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; transform: translateY(1px); }
+
   /* footer */
   .rules { margin-top: 96px; border-top: 1px dashed var(--faint); padding-top: 40px; }
   .rules h3 { font-weight: 300; letter-spacing: -0.02em; font-size: 1.4rem; margin: 0 0 24px; }
@@ -328,6 +411,10 @@
     .g2, .g3 { grid-template-columns: 1fr !important; }
     .cell { border-right-width: 0; }
     .card-head .why { display: none; }
+    .deck-hero { grid-template-columns: 1fr; }
+    .slide-rail { flex-direction: row; max-height: none; border-left: 0; border-top: 1px dashed var(--faint); overflow-x: auto; padding: 12px 10px; }
+    .s-thumb { width: 84px; }
+    .gcode-stage { grid-template-columns: 1fr 76px; }
   }
   @media (prefers-reduced-motion: reduce) {
     * { transition: none !important; }
@@ -340,7 +427,7 @@
   <header class="masthead">
     <div class="eyebrow">mother · artifact system · proposal 01</div>
     <h1><span class="accent">One skeleton,</span><br>many organs.</h1>
-    <p class="lede">Every artifact mother ingests gets a detail card built from the <b>same eight zones in the same order</b> — only the modules inside them change by file family. Below: the zone map, then six fully-worked cards. Zone tags (<span style="font-family:var(--mono);font-size:10px;color:#ff9505">Z1–Z8</span>) stay visible on every card so the shared anatomy is legible.</p>
+    <p class="lede">Every artifact mother ingests gets a detail card built from the <b>same eight zones in the same order</b> — only the modules inside them change by file family. Below: the zone map, then eleven fully-worked cards across two waves. Zone tags (<span style="font-family:var(--mono);font-size:10px;color:#ff9505">Z1–Z8</span>) stay visible on every card so the shared anatomy is legible.</p>
 
     <div class="zonemap" role="list">
       <div role="listitem"><div class="zk">Z1</div><div class="zt">Hero</div><div class="zd">The content itself, interactive. Waveform, player, zoomable image, schema grid.</div></div>
@@ -356,7 +443,9 @@
 
   <nav class="jump" aria-label="Jump to card">
     <a href="#voice">01 Voice</a><a href="#track">02 Track</a><a href="#image">03 Image</a>
-    <a href="#vector">04 Vector</a><a href="#dataset">05 Dataset</a><a href="#doc">06 Document</a>
+    <a href="#vector">04 Vector</a><a href="#dataset">05 Dataset</a><a href="#doc">06 PDF</a>
+    <a href="#video">07 Video</a><a href="#model">08 3D Model</a><a href="#gcode">09 G-code</a>
+    <a href="#deck">10 Deck</a><a href="#wordproc">11 Redline</a>
     <a href="#rules">Rules</a>
   </nav>
 
@@ -1155,6 +1244,669 @@
     </article>
   </section>
 
+  <!-- ============ 07 VIDEO ============ -->
+  <section class="card-section" id="video">
+    <div class="card-head">
+      <span class="n">07</span><h2>Video</h2>
+      <span class="why">Storyboard hover-scrub, chapter ticks, a browser-safe verdict, and Loom-style tasks under the player.</span>
+    </div>
+    <article class="card" aria-label="Video detail card">
+      <div class="grid" style="grid-template-columns:1fr;">
+        <div class="cell" style="border-right:0;">
+          <span class="ztag"><em>Z2</em> · IDENTITY</span>
+          <div class="id-strip">
+            <span class="badge"><span class="glyph" aria-hidden="true">▷</span>Video · B-roll</span>
+            <span class="chip">mov · hevc 4k</span><span class="chip">1.2 GB</span>
+            <span class="boost"><i class="on"></i><i class="on"></i><i class="on"></i><i></i><span>Boost L3</span></span>
+            <div class="title-line"><span class="title">Magpod bench assembly — b-roll pass 2</span></div>
+            <div class="caption"><span class="ai">✦ AI</span> Overhead bench footage: brass insert install and first assembly of the walnut Magpod shell, with narration.</div>
+            <div class="prov">Source <b>iPhone 15 Pro · 4K30 HDR</b> · Captured <b>Jul 6, 3:40 PM</b> · Cary NC · Ingested <b>Jul 6</b></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid" style="grid-template-columns:1fr;">
+        <div class="cell pad0" style="border-right:0;">
+          <span class="ztag"><em>Z1</em> · HERO</span>
+          <div class="vid-stage">
+            <canvas id="vid-frame" aria-label="Video frame: warm overhead shot of a workbench"></canvas>
+            <button class="vid-play" aria-label="Play (space)">▶</button>
+          </div>
+          <div class="scrub" aria-label="Scrubber with chapter ticks">
+            <div class="scrub-bar">
+              <span class="played"></span>
+              <span class="chap" style="left:0%"></span><span class="chap" style="left:22%"></span>
+              <span class="chap" style="left:47%"></span><span class="chap" style="left:78%"></span>
+            </div>
+            <div class="scrub-under">
+              <span class="timecode">1:26 <span>/ 4:12</span></span>
+              <span style="font-size:10.5px;color:var(--dim)">ch 2 · brass inserts</span>
+              <span style="margin-left:auto"></span>
+              <span class="verdict warn"><i>⚠</i> HEVC — original won't play in all browsers · proxy ready</span>
+            </div>
+          </div>
+          <div class="storyboard" aria-label="Storyboard tiles">
+            <canvas data-sb="0"></canvas><canvas data-sb="1" class="cur"></canvas><canvas data-sb="2"></canvas><canvas data-sb="3"></canvas>
+            <canvas data-sb="4"></canvas><canvas data-sb="5"></canvas><canvas data-sb="6"></canvas><canvas data-sb="7"></canvas>
+          </div>
+          <div class="aiblock"><span class="ai">✦ AI</span> Auto-chapters: setup · brass inserts · shell assembly · final pass. 1 task detected. Transcript searchable.</div>
+        </div>
+      </div>
+
+      <div class="grid" style="grid-template-columns:1fr;">
+        <div class="cell pad0" style="border-right:0;">
+          <span class="ztag" style="top:10px"><em>Z3</em> · FACTS</span>
+          <div class="facts">
+            <div class="fact"><div class="v">4:12</div><div class="k">Duration</div></div>
+            <div class="fact"><div class="v">4K<small> 30</small></div><div class="k">Res · FPS</div></div>
+            <div class="fact"><div class="v" style="color:var(--saffron)">⚠<small> proxy</small></div><div class="k">Browser-safe</div></div>
+            <div class="fact tap"><div class="v">Jul 6</div><div class="k">Captured</div></div>
+            <div class="fact"><div class="v">3</div><div class="k">Clips minted</div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid" style="grid-template-columns:1fr;">
+        <div class="cell" style="border-right:0;">
+          <span class="ztag"><em>Z4</em> · ACTIONS</span>
+          <div class="actions">
+            <button class="btn-primary">▶ Watch<span class="kbd">space</span></button>
+            <button class="btn converse">✦ Prompt</button>
+            <button class="btn">Clip range</button>
+            <button class="btn">Grab frame</button>
+            <button class="btn">Extract audio</button>
+            <button class="btn">Caption</button>
+            <button class="btn" aria-label="More actions">⋯</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid g2" style="grid-template-columns: 1.6fr 1fr;">
+        <div class="cell pad0">
+          <span class="ztag" style="top:12px"><em>Z5</em> · INTELLIGENCE</span>
+          <div class="tabs" role="tablist" data-tabs="video">
+            <button class="tab" role="tab" aria-selected="true" data-tab="tr">Transcript</button>
+            <button class="tab" role="tab" aria-selected="false" data-tab="items">Items<span class="ct">1</span></button>
+            <button class="tab" role="tab" aria-selected="false" data-tab="ent">Entities</button>
+          </div>
+          <div class="panel active" data-panel="tr" role="tabpanel">
+            <div class="tr-row"><span class="tc">1:04</span><span class="spk"><i style="background:var(--sp1)"></i>Holt</span><span class="tr-t">Heat-set at 380, straight down, let the insert pull itself in.</span></div>
+            <div class="tr-row"><span class="tc">1:26</span><span class="spk"><i style="background:var(--sp1)"></i>Holt</span><span class="tr-t">This brass finish is the keeper — <span class="hl">note to reshoot the matte version for comparison</span>.</span></div>
+            <div style="padding-top:12px"><button class="pillbtn">search transcript</button> <button class="pillbtn">jump to chapter</button></div>
+          </div>
+          <div class="panel" data-panel="items" role="tabpanel">
+            <div class="sug" data-sug>
+              <span class="ic">☐</span>
+              <span><span class="what">Reshoot matte-brass comparison b-roll</span><br><span class="receipt">todo · from <a href="#video">1:26 narration</a></span> <span class="ok-note">→ todo created</span></span>
+              <span class="sug-acts"><button class="acc">Accept</button><button>Edit</button><button>Dismiss</button></span>
+            </div>
+          </div>
+          <div class="panel" data-panel="ent" role="tabpanel">
+            <div class="mini-list">
+              <div class="row"><span class="t">Scenes</span> workbench overhead · macro insert · assembly</div>
+              <div class="row"><span class="t">Objects</span> soldering iron · brass inserts · walnut shell</div>
+            </div>
+          </div>
+        </div>
+        <div class="cell" style="border-right:0;">
+          <span class="ztag"><em>Z6</em> · CONTEXT</span>
+          <p class="microlabel">Tags</p>
+          <div class="tagrow">
+            <span class="tag">magpod</span><span class="tag">b-roll</span>
+            <span class="tag auto"><i></i>bench</span><span class="tag auto"><i></i>assembly</span>
+            <button class="tag add">+ tag</button>
+          </div>
+          <div class="notefield"><b>Note</b> — chapter 3 has the listing hero shot around 2:40; grab the sharpest frame near it.</div>
+        </div>
+      </div>
+
+      <div class="grid g2" style="grid-template-columns: 1.6fr 1fr;">
+        <div class="cell">
+          <span class="ztag"><em>Z7</em> · CONNECTIONS</span>
+          <div class="mini-list">
+            <div class="row"><span class="t">Image</span> Walnut + brass bench test fit <span class="why2">same bench session</span></div>
+            <div class="row"><span class="t">Clip</span> insert_install_15s.mp4 <span class="why2">minted from 1:02–1:17</span></div>
+            <div class="row"><span class="t">Track</span> Slow Bloom <span class="why2">temp bed on the edit</span></div>
+          </div>
+        </div>
+        <div class="cell" style="border-right:0;">
+          <span class="ztag"><em>Z8</em> · RECORD</span>
+          <div class="actlog"><b>Jul 6</b> probed · storyboard · proxy (L1–L2)<br><b>Jul 6</b> transcript · chapters · task (L3)</div>
+          <div class="allmeta">All metadata — streams (34) ▸ &nbsp;·&nbsp; MOV / HEVC Main10 / AAC · HDR HLG · rotation 0°</div>
+        </div>
+      </div>
+    </article>
+  </section>
+
+  <!-- ============ 08 MODEL ============ -->
+  <section class="card-section" id="model">
+    <div class="card-head">
+      <span class="n">08</span><h2>3D model</h2>
+      <span class="why">Orbit viewer with inspection toggles and pinned annotations; a McMaster-grade spec row; the print record as lab notebook.</span>
+    </div>
+    <article class="card" aria-label="3D model detail card">
+      <div class="grid" style="grid-template-columns:1fr;">
+        <div class="cell" style="border-right:0;">
+          <span class="ztag"><em>Z2</em> · IDENTITY</span>
+          <div class="id-strip">
+            <span class="badge"><span class="glyph" aria-hidden="true">◆</span>Model · Mesh</span>
+            <span class="chip">3mf</span><span class="chip">14.6 MB</span>
+            <span class="boost"><i class="on"></i><i class="on"></i><i class="on"></i><i></i><span>Boost L3</span></span>
+            <div class="title-line"><span class="title">magpod_shell_v3.3mf</span></div>
+            <div class="caption"><span class="ai">✦ AI</span> Rounded enclosure shell with four insert bosses; plate preview and print settings found inside the 3MF.</div>
+            <div class="prov">Source <b>Fusion export → Bambu Studio</b> · Modified <b>Jul 9</b> · Ingested <b>Jul 9</b> · Derived from <b>magpod.f3d</b></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid" style="grid-template-columns:1fr;">
+        <div class="cell pad0" style="border-right:0;">
+          <span class="ztag"><em>Z1</em> · HERO</span>
+          <div class="orbit-stage" id="orbit">
+            <canvas id="model-canvas" aria-label="3D model preview: rounded shell, isometric view"></canvas>
+            <div class="viewer-toggles" role="group" aria-label="View mode">
+              <button data-vm="solid" aria-pressed="true">solid</button>
+              <button data-vm="wire" aria-pressed="false">wire</button>
+              <button data-vm="dims" aria-pressed="false">dims</button>
+            </div>
+            <button class="hotspot" style="left:63%; top:38%" title="Annotation 1: this boss cracked on v2 — thickened 1.6→2.4">1</button>
+            <span class="orbit-hint">drag to orbit · scroll to zoom</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid" style="grid-template-columns:1fr;">
+        <div class="cell pad0" style="border-right:0;">
+          <span class="ztag" style="top:10px"><em>Z3</em> · FACTS</span>
+          <div class="facts">
+            <div class="fact"><div class="v">84<small>×62×38</small></div><div class="k">mm · units ✓</div></div>
+            <div class="fact"><div class="v">96<small> cm³</small></div><div class="k">Volume</div></div>
+            <div class="fact"><div class="v">142<small>k</small></div><div class="k">Triangles</div></div>
+            <div class="fact"><div class="v" style="color:var(--mint)">✓</div><div class="k">Printable</div></div>
+            <div class="fact"><div class="v">2</div><div class="k">Shells</div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid" style="grid-template-columns:1fr;">
+        <div class="cell" style="border-right:0;">
+          <span class="ztag"><em>Z4</em> · ACTIONS</span>
+          <div class="actions">
+            <button class="btn-primary">Orbit<span class="kbd">space</span></button>
+            <button class="btn converse">✦ Prompt</button>
+            <button class="btn">Measure</button>
+            <button class="btn">Open in slicer</button>
+            <button class="btn">Send to printer</button>
+            <button class="btn">Export STEP · GLB</button>
+            <button class="btn" aria-label="More actions">⋯</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid g2" style="grid-template-columns: 1.6fr 1fr;">
+        <div class="cell pad0">
+          <span class="ztag" style="top:12px"><em>Z5</em> · INTELLIGENCE</span>
+          <div class="tabs" role="tablist" data-tabs="model">
+            <button class="tab" role="tab" aria-selected="true" data-tab="geo">Geometry</button>
+            <button class="tab" role="tab" aria-selected="false" data-tab="dep">Dependencies</button>
+            <button class="tab" role="tab" aria-selected="false" data-tab="prints">Print record<span class="ct">6</span></button>
+          </div>
+          <div class="panel active" data-panel="geo" role="tabpanel">
+            <div class="mini-list">
+              <div class="row"><span class="t">Manifold</span> watertight · no self-intersections <span class="why2">✓</span></div>
+              <div class="row"><span class="t">Walls</span> min 2.4 mm at insert bosses <span class="why2">✓ ≥ 2 perimeters</span></div>
+              <div class="row"><span class="t">Orient</span> current orientation needs no supports <span class="why2">✦ Tweaker agrees</span></div>
+            </div>
+          </div>
+          <div class="panel" data-panel="dep" role="tabpanel">
+            <div class="mini-list">
+              <div class="row"><span class="t">Plates</span> 1 plate · preview embedded <span class="why2">from 3MF · free</span></div>
+              <div class="row"><span class="t">Settings</span> 0.2mm · PETG · 2 walls · 15% gyroid <span class="why2">embedded profile</span></div>
+              <div class="row"><span class="t">Source</span> magpod.f3d <span class="why2">derived_from</span></div>
+            </div>
+          </div>
+          <div class="panel" data-panel="prints" role="tabpanel">
+            <div class="mini-list">
+              <div class="row"><span class="t">Jul 10</span> MK4 · clear PETG · 5:58 <span class="why2" style="color:var(--mint)">✓ the keeper</span></div>
+              <div class="row"><span class="t">Jul 8</span> MK4 · smoke PETG · 6:04 <span class="why2">✗ warped corner — bed 85→90</span></div>
+              <div class="row"><span class="t">…</span> 4 earlier prints <span class="why2">5 ✓ · 1 ✗ overall</span></div>
+            </div>
+          </div>
+        </div>
+        <div class="cell" style="border-right:0;">
+          <span class="ztag"><em>Z6</em> · CONTEXT</span>
+          <p class="microlabel">Tags</p>
+          <div class="tagrow">
+            <span class="tag">magpod</span><span class="tag">enclosure</span>
+            <span class="tag auto"><i></i>shell</span>
+            <button class="tag add">+ tag</button>
+          </div>
+          <div class="notefield"><b>Note</b> — v3 bosses thickened after v2 crack (see pin ①). Print flat side down, no brim needed.</div>
+        </div>
+      </div>
+
+      <div class="grid g2" style="grid-template-columns: 1.6fr 1fr;">
+        <div class="cell">
+          <span class="ztag"><em>Z7</em> · CONNECTIONS</span>
+          <div class="mini-list">
+            <div class="row"><span class="t">Project</span> magpod.f3d <span class="why2">source · derived_from</span></div>
+            <div class="row"><span class="t">G-code</span> magpod_shell_v3_mk4.gcode <span class="why2">sliced from this</span></div>
+            <div class="row"><span class="t">Model</span> magpod_shell_v2.3mf <span class="why2">prior version · +0.8mm bosses</span></div>
+          </div>
+        </div>
+        <div class="cell" style="border-right:0;">
+          <span class="ztag"><em>Z8</em> · RECORD</span>
+          <div class="actlog"><b>Jul 9</b> 3MF unwrapped · plate + settings (L1)<br><b>Jul 9</b> mesh analysis · GLB rendition (L2)</div>
+          <div class="allmeta">All metadata (26) ▸ &nbsp;·&nbsp; Renditions: GLB viewer · LOD · thumb ▸</div>
+        </div>
+      </div>
+    </article>
+  </section>
+
+  <!-- ============ 09 GCODE ============ -->
+  <section class="card-section" id="gcode">
+    <div class="card-head">
+      <span class="n">09</span><h2>G-code</h2>
+      <span class="why">Layer viewer with feature coloring; the compatibility verdict is the loudest fact — the failure mode is physical.</span>
+    </div>
+    <article class="card" aria-label="G-code detail card">
+      <div class="grid" style="grid-template-columns:1fr;">
+        <div class="cell" style="border-right:0;">
+          <span class="ztag"><em>Z2</em> · IDENTITY</span>
+          <div class="id-strip">
+            <span class="badge"><span class="glyph" aria-hidden="true">≋</span>G-code · FDM</span>
+            <span class="chip">gcode</span><span class="chip">41 MB</span>
+            <span class="boost"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><span>Boost L4</span></span>
+            <div class="title-line"><span class="title">magpod_shell_v3_0.4n_0.2mm_PETG_MK4.gcode</span></div>
+            <div class="caption"><span class="ai">✦ AI</span> Production slice of shell v3 for the MK4 — the one that produced the good batch.</div>
+            <div class="prov">Sliced with <b>PrusaSlicer 2.9.1</b> · <b>Jul 9</b> · Derived from <b>magpod_shell_v3.3mf</b> · Thumbnail embedded</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid" style="grid-template-columns:1fr;">
+        <div class="cell" style="border-right:0; border-bottom:0; padding-bottom:0;">
+          <span class="ztag"><em>Z3a</em> · COMPATIBILITY</span>
+          <div class="compat">
+            <span class="verdict"><i>✓</i> Matches Prusa MK4 · “Bench Right”</span>
+            <span class="chk">printer <b>MK4 ✓</b></span>
+            <span class="chk">nozzle <b>0.4 ✓</b></span>
+            <span class="chk">material <b>PETG 240/85 ✓</b></span>
+            <span class="chk">fits bed <b>✓</b></span>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid" style="grid-template-columns:1fr;">
+        <div class="cell pad0" style="border-right:0;">
+          <span class="ztag"><em>Z1</em> · HERO</span>
+          <div class="gcode-stage">
+            <canvas id="gcode-canvas" aria-label="Toolpath preview at selected layer, colored by feature type"></canvas>
+            <div class="layer-rail">
+              <div class="layer-num" id="layer-num">87<span style="color:var(--dim)"> / 190</span></div>
+              <input type="range" id="layer-slider" min="1" max="190" value="87" aria-label="Layer">
+              <div class="layer-num" style="color:var(--dim); font-size:9px">LAYER</div>
+            </div>
+          </div>
+          <div class="feat-legend" aria-label="Feature types">
+            <button data-feat="perim" aria-pressed="true"><i style="background:var(--sp1)"></i>perimeter 41%</button>
+            <button data-feat="infill" aria-pressed="true"><i style="background:var(--sp2)"></i>infill 33%</button>
+            <button data-feat="brim" aria-pressed="true"><i style="background:var(--sp3)"></i>solid/top 26%</button>
+            <span class="t">legend toggles features · times per feature from slicer</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid" style="grid-template-columns:1fr;">
+        <div class="cell pad0" style="border-right:0;">
+          <span class="ztag" style="top:10px"><em>Z3</em> · FACTS</span>
+          <div class="facts">
+            <div class="fact"><div class="v">5:42</div><div class="k">Est · slicer</div></div>
+            <div class="fact"><div class="v">6:05</div><div class="k">Re-estimate</div></div>
+            <div class="fact"><div class="v">78<small> g</small></div><div class="k">PETG · $2.10</div></div>
+            <div class="fact"><div class="v">0.2<small> mm</small></div><div class="k">Layer</div></div>
+            <div class="fact"><div class="v">240<small>/85</small></div><div class="k">Temps</div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid" style="grid-template-columns:1fr;">
+        <div class="cell" style="border-right:0;">
+          <span class="ztag"><em>Z4</em> · ACTIONS</span>
+          <div class="actions">
+            <button class="btn-primary">Print → MK4<span class="kbd">space</span></button>
+            <button class="btn converse">✦ Prompt</button>
+            <button class="btn">Reprint last</button>
+            <button class="btn">Compare settings</button>
+            <button class="btn">Pause @ layer…</button>
+            <button class="btn" aria-label="More actions">⋯</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid g2" style="grid-template-columns: 1.6fr 1fr;">
+        <div class="cell pad0">
+          <span class="ztag" style="top:12px"><em>Z5</em> · INTELLIGENCE</span>
+          <div class="tabs" role="tablist" data-tabs="gcode">
+            <button class="tab" role="tab" aria-selected="true" data-tab="set">Settings</button>
+            <button class="tab" role="tab" aria-selected="false" data-tab="chg">Changes</button>
+            <button class="tab" role="tab" aria-selected="false" data-tab="out">Outcomes<span class="ct">4</span></button>
+          </div>
+          <div class="panel active" data-panel="set" role="tabpanel">
+            <div class="mini-list" style="font-family:var(--mono); font-size:11px;">
+              <div class="row"><span class="t">walls</span> perimeters = 2 · external first</div>
+              <div class="row"><span class="t">infill</span> 15% gyroid</div>
+              <div class="row"><span class="t">speed</span> first layer 25 · perimeters 45 · infill 80</div>
+              <div class="row"><span class="t">flags</span> <span style="color:var(--mint)">no risk flags — temps in PETG range, first layer sane</span></div>
+            </div>
+          </div>
+          <div class="panel" data-panel="chg" role="tabpanel">
+            <p style="font-size:12.5px; margin:0 0 8px; color:var(--dim)">vs magpod_shell_v3_mk4_draft.gcode (Jul 8):</p>
+            <div class="mini-list" style="font-family:var(--mono); font-size:11px;">
+              <div class="row"><span class="t">bed</span> 85 → <b style="color:var(--saffron)">90</b> first layer <span class="why2">warp fix</span></div>
+              <div class="row"><span class="t">speed</span> first_layer 35 → <b style="color:var(--saffron)">25</b></div>
+            </div>
+          </div>
+          <div class="panel" data-panel="out" role="tabpanel">
+            <div class="mini-list">
+              <div class="row"><span class="t">Jul 10</span> MK4 · 6:02 actual <span class="why2" style="color:var(--mint)">✓ batch of 1 · the keeper</span></div>
+              <div class="row"><span class="t">Jul 10</span> MK4 · 6:07 <span class="why2" style="color:var(--mint)">✓</span></div>
+              <div class="row"><span class="t">Jul 9</span> MK4 · cancelled @ layer 12 <span class="why2">operator — wrong sheet</span></div>
+            </div>
+          </div>
+        </div>
+        <div class="cell" style="border-right:0;">
+          <span class="ztag"><em>Z6</em> · CONTEXT</span>
+          <p class="microlabel">Tags</p>
+          <div class="tagrow">
+            <span class="tag">magpod</span><span class="tag">production</span>
+            <span class="tag auto"><i></i>petg</span>
+            <button class="tag add">+ tag</button>
+          </div>
+          <div class="notefield"><b>Note</b> — THE production slice for shell v3. Cost/unit confirmed $2.10 filament + 6h machine. Textured sheet only.</div>
+        </div>
+      </div>
+
+      <div class="grid g2" style="grid-template-columns: 1.6fr 1fr;">
+        <div class="cell">
+          <span class="ztag"><em>Z7</em> · CONNECTIONS</span>
+          <div class="mini-list">
+            <div class="row"><span class="t">Model</span> magpod_shell_v3.3mf <span class="why2">derived_from · sliced Jul 9</span></div>
+            <div class="row"><span class="t">Doc</span> PETG laser settings — test matrix <span class="why2">same material program</span></div>
+          </div>
+        </div>
+        <div class="cell" style="border-right:0;">
+          <span class="ztag"><em>Z8</em> · RECORD</span>
+          <div class="actlog"><b>Jul 9</b> header parsed · thumb extracted (L1)<br><b>Jul 9</b> re-estimated · compat ✓ (L2–L3)<br><b>Jul 10</b> 2 outcomes from Bench Right</div>
+          <div class="allmeta">All metadata (31) ▸ &nbsp;·&nbsp; config dump ▸ &nbsp;·&nbsp; parsed head+tail only</div>
+        </div>
+      </div>
+    </article>
+  </section>
+
+  <!-- ============ 10 DECK ============ -->
+  <section class="card-section" id="deck">
+    <div class="card-head">
+      <span class="n">10</span><h2>Deck</h2>
+      <span class="why">Slide reader + filmstrip; every slide addressable and searchable; a fonts verdict before any client export.</span>
+    </div>
+    <article class="card" aria-label="Presentation deck detail card">
+      <div class="grid" style="grid-template-columns:1fr;">
+        <div class="cell" style="border-right:0;">
+          <span class="ztag"><em>Z2</em> · IDENTITY</span>
+          <div class="id-strip">
+            <span class="badge"><span class="glyph" aria-hidden="true">▦</span>Deck · PPTX</span>
+            <span class="chip">pptx</span><span class="chip">28 MB</span>
+            <span class="boost"><i class="on"></i><i class="on"></i><i class="on"></i><i></i><span>Boost L3</span></span>
+            <div class="title-line"><span class="title">Magpod wholesale pitch — v4</span></div>
+            <div class="caption"><span class="ai">✦ AI</span> 18-slide wholesale pitch: product line, margins, MOQ tiers, and a live demo video on slide 12.</div>
+            <div class="prov">Author <b>Batch Studio</b> · Edited <b>Jul 2</b> · Ingested <b>Jul 2</b> · Family: <b>4 versions clustered</b></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid" style="grid-template-columns:1fr;">
+        <div class="cell pad0" style="border-right:0;">
+          <span class="ztag"><em>Z1</em> · HERO</span>
+          <div class="deck-hero">
+            <div class="slide-cover" role="img" aria-label="Cover slide: Magpod wholesale pitch">
+              <div class="kicker">Batch Studio · Wholesale 2026</div>
+              <h4>Magpod: shelf-ready magnetic pods,<br>made one at a time.</h4>
+              <div class="sub2">MOQ tiers · margins · fulfillment — 18 slides</div>
+            </div>
+            <div class="slide-rail" aria-label="Slides">
+              <div class="s-thumb cur"><span>1</span><i style="left:12%;top:30%;width:56%;height:7%"></i><i style="left:12%;top:44%;width:38%;height:4%"></i></div>
+              <div class="s-thumb"><span>2</span><i style="left:12%;top:20%;width:40%;height:6%"></i><i style="left:12%;top:36%;width:70%;height:3%"></i><i style="left:12%;top:46%;width:64%;height:3%"></i></div>
+              <div class="s-thumb"><span>7</span><i style="left:12%;top:20%;width:34%;height:6%"></i><i style="left:14%;top:38%;width:20%;height:38%"></i><i style="left:40%;top:50%;width:20%;height:26%"></i><i style="left:66%;top:30%;width:20%;height:46%"></i></div>
+              <div class="s-thumb"><span>12</span><i style="left:22%;top:24%;width:56%;height:50%"></i></div>
+              <div class="s-thumb"><span>…18</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid" style="grid-template-columns:1fr;">
+        <div class="cell pad0" style="border-right:0;">
+          <span class="ztag" style="top:10px"><em>Z3</em> · FACTS</span>
+          <div class="facts">
+            <div class="fact"><div class="v">18</div><div class="k">Slides · 16:9</div></div>
+            <div class="fact"><div class="v" style="color:var(--mint)">✓</div><div class="k">Fonts render</div></div>
+            <div class="fact tap"><div class="v">Jul 2</div><div class="k">Edited</div></div>
+            <div class="fact"><div class="v">2</div><div class="k">Presented to</div></div>
+            <div class="fact"><div class="v">v4<small> of 4</small></div><div class="k">Version</div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid" style="grid-template-columns:1fr;">
+        <div class="cell" style="border-right:0;">
+          <span class="ztag"><em>Z4</em> · ACTIONS</span>
+          <div class="actions">
+            <button class="btn-primary">Present<span class="kbd">space</span></button>
+            <button class="btn converse">✦ Prompt</button>
+            <button class="btn">Export PDF</button>
+            <button class="btn">Slide → PNG</button>
+            <button class="btn">Harvest slides</button>
+            <button class="btn" aria-label="More actions">⋯</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid g2" style="grid-template-columns: 1.6fr 1fr;">
+        <div class="cell pad0">
+          <span class="ztag" style="top:12px"><em>Z5</em> · INTELLIGENCE</span>
+          <div class="tabs" role="tablist" data-tabs="deck">
+            <button class="tab" role="tab" aria-selected="true" data-tab="txt">Text · slides</button>
+            <button class="tab" role="tab" aria-selected="false" data-tab="chg">Changes</button>
+            <button class="tab" role="tab" aria-selected="false" data-tab="dep">Dependencies</button>
+          </div>
+          <div class="panel active" data-panel="txt" role="tabpanel">
+            <p style="font-size:10.5px;color:var(--dim);margin:0 0 6px">search inside slides — hits land on the slide, not the deck:</p>
+            <div class="slide-hit">
+              <div class="st"><span>7</span></div>
+              <div class="tx">“Wholesale <span class="hl2">margin at MOQ 24 is 52%</span>; drops to 44% with retail packaging.” <span style="color:var(--dim);font-size:10.5px">· slide 7 + speaker notes</span></div>
+            </div>
+            <div class="slide-hit" style="border-bottom:0">
+              <div class="st"><span>12</span></div>
+              <div class="tx">Demo video (embedded, 0:48) — poster frame only in PDF export. <span style="color:var(--dim);font-size:10.5px">· slide 12</span></div>
+            </div>
+          </div>
+          <div class="panel" data-panel="chg" role="tabpanel">
+            <p style="font-size:12.5px; margin:0; line-height:1.7">vs v3 (sent Jun 24): <b style="font-weight:400">3 slides changed, 1 added.</b> MOQ tier pricing revised on slide 7; new fulfillment timeline slide 14; cover date updated.</p>
+          </div>
+          <div class="panel" data-panel="dep" role="tabpanel">
+            <div class="mini-list">
+              <div class="row"><span class="t">Fonts</span> Inter · Fraunces <span class="why2" style="color:var(--mint)">✓ both installed — renders clean</span></div>
+              <div class="row"><span class="t">Media</span> 22 images · 1 video (48s, embedded) <span class="why2">extractable</span></div>
+              <div class="row"><span class="t">Slide 9</span> animated build <span class="why2">⚠ static in PDF</span></div>
+            </div>
+          </div>
+        </div>
+        <div class="cell" style="border-right:0;">
+          <span class="ztag"><em>Z6</em> · CONTEXT</span>
+          <p class="microlabel">Tags</p>
+          <div class="tagrow">
+            <span class="tag">wholesale</span><span class="tag">pitch</span>
+            <span class="tag auto"><i></i>magpod</span>
+            <button class="tag add">+ tag</button>
+          </div>
+          <div class="notefield"><b>Presented to</b> — Cary Makers Guild (Jul 3) · Hendrick & Co buyer call (Jul 8, v4). v3 went to the buyer by email Jun 24.</div>
+        </div>
+      </div>
+
+      <div class="grid g2" style="grid-template-columns: 1.6fr 1fr;">
+        <div class="cell">
+          <span class="ztag"><em>Z7</em> · CONNECTIONS</span>
+          <div class="mini-list">
+            <div class="row"><span class="t">Deck</span> v1–v3 <span class="why2">same family · clustered</span></div>
+            <div class="row"><span class="t">Dataset</span> orders_2026_q2.csv <span class="why2">slide 7 cites these numbers</span></div>
+            <div class="row"><span class="t">Video</span> Magpod bench assembly b-roll <span class="why2">slide 12 source</span></div>
+          </div>
+        </div>
+        <div class="cell" style="border-right:0;">
+          <span class="ztag"><em>Z8</em> · RECORD</span>
+          <div class="actlog"><b>Jul 2</b> parsed · rendered 18 PNGs (L1–L2)<br><b>Jul 2</b> per-slide index · outline (L3)</div>
+          <div class="allmeta">All metadata (24) ▸ &nbsp;·&nbsp; theme: Batch 2026 · 1920×1080</div>
+        </div>
+      </div>
+    </article>
+  </section>
+
+  <!-- ============ 11 WORDPROC ============ -->
+  <section class="card-section" id="wordproc">
+    <div class="card-head">
+      <span class="n">11</span><h2>Document — redline</h2>
+      <span class="why">Editable docs pivot to revisions: Clean/Redline/Original toggle, author-colored changes, and terms flagged while still in flux.</span>
+    </div>
+    <article class="card" aria-label="Word-processing document detail card">
+      <div class="grid" style="grid-template-columns:1fr;">
+        <div class="cell" style="border-right:0;">
+          <span class="ztag"><em>Z2</em> · IDENTITY</span>
+          <div class="id-strip">
+            <span class="badge"><span class="glyph" aria-hidden="true">≡</span>Doc · Wordproc</span>
+            <span class="chip">docx</span><span class="chip">184 KB</span>
+            <span class="boost"><i class="on"></i><i class="on"></i><i class="on"></i><i></i><span>Boost L3</span></span>
+            <div class="title-line"><span class="title">Magpod wholesale agreement — v4 draft</span></div>
+            <div class="caption"><span class="ai">✦ AI</span> Wholesale terms with Hendrick & Co; two changes still open from opposing counsel, both touching money.</div>
+            <div class="prov">Last edit <b>S. Chen (counsel) · Jul 11</b> · Ingested <b>Jul 11</b> · Snapshot — platform history is perishable</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid" style="grid-template-columns:1fr;">
+        <div class="cell pad0" style="border-right:0;" id="wp-card" data-markup="redline">
+          <span class="ztag"><em>Z1</em> · HERO</span>
+          <div style="display:flex; align-items:center; gap:12px; padding:12px 18px 0;">
+            <div class="markup-toggle" role="group" aria-label="Markup mode">
+              <button data-mk="clean" aria-pressed="false">clean</button>
+              <button data-mk="redline" aria-pressed="true">redline</button>
+              <button data-mk="original" aria-pressed="false">original</button>
+            </div>
+            <span style="font-size:10.5px; color:var(--dim)">pixel-true view (what the client saw) ▸</span>
+          </div>
+          <div class="doc-read" role="document">
+            <h5>4. Pricing & Exclusivity</h5>
+            <p><span class="clause">4.1</span>Wholesale unit price shall be <span class="del a2">$4,500</span><span class="ins a2">$6,000</span> per case of 24 units, FOB Cary NC, reviewed <span class="del a1">annually</span><span class="ins a1">every 18 months</span>.</p>
+            <p><span class="clause">4.2</span><span class="del a2">Buyer shall hold exclusive regional distribution rights for the Southeast territory.</span><span class="ins a2">Buyer holds non-exclusive distribution rights; Studio retains direct-to-consumer channels.</span></p>
+            <p><span class="clause">4.3</span>First order due within 30 days of execution; delivery within 6 weeks of order.</p>
+          </div>
+          <div class="author-key">
+            <span><i style="background:#e2711d"></i>Holt · 3 changes</span>
+            <span><i style="background:#5e8fc7"></i>S. Chen (counsel) · 4 changes</span>
+            <span style="margin-left:auto; font-family:var(--mono); font-size:9.5px;">ins = underline · del = strike</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid" style="grid-template-columns:1fr;">
+        <div class="cell pad0" style="border-right:0;">
+          <span class="ztag" style="top:10px"><em>Z3</em> · FACTS</span>
+          <div class="facts">
+            <div class="fact"><div class="v">2,412</div><div class="k">Words · 12 min</div></div>
+            <div class="fact"><div class="v" style="color:var(--saffron)">4</div><div class="k">Open changes</div></div>
+            <div class="fact"><div class="v">2</div><div class="k">Comments</div></div>
+            <div class="fact"><div class="v" style="color:var(--saffron)">⚠</div><div class="k">Terms in flux</div></div>
+            <div class="fact"><div class="v">v4</div><div class="k">2 named vers.</div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid" style="grid-template-columns:1fr;">
+        <div class="cell" style="border-right:0;">
+          <span class="ztag"><em>Z4</em> · ACTIONS</span>
+          <div class="actions">
+            <button class="btn-primary">Read<span class="kbd">space</span></button>
+            <button class="btn converse">✦ Chat with doc</button>
+            <button class="btn">Accept all → clean copy</button>
+            <button class="btn">Lift table</button>
+            <button class="btn">Export md · pdf</button>
+            <button class="btn" aria-label="More actions">⋯</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid g2" style="grid-template-columns: 1.6fr 1fr;">
+        <div class="cell pad0">
+          <span class="ztag" style="top:12px"><em>Z5</em> · INTELLIGENCE</span>
+          <div class="tabs" role="tablist" data-tabs="wordproc">
+            <button class="tab" role="tab" aria-selected="true" data-tab="chg">Changes</button>
+            <button class="tab" role="tab" aria-selected="false" data-tab="ent">Entities</button>
+            <button class="tab" role="tab" aria-selected="false" data-tab="items">Items<span class="ct">2</span></button>
+          </div>
+          <div class="panel active" data-panel="chg" role="tabpanel">
+            <p style="font-size:13px; margin:0; line-height:1.7"><b style="font-weight:400">v3 → v4, in plain English:</b> counsel removed Southeast exclusivity (4.2), raised the case price $4,500 → $6,000 (4.1), and stretched the price-review period to 18 months. Delivery terms untouched.</p>
+            <p style="font-size:10.5px; color:var(--dim); margin:10px 0 0">from author-attributed change spans · every claim links to its clause</p>
+          </div>
+          <div class="panel" data-panel="ent" role="tabpanel">
+            <div class="mini-list">
+              <div class="row"><span class="t">Parties</span> Batch Studio LLC · Hendrick & Co</div>
+              <div class="row"><span class="t">Money</span> $6,000/case <span class="why2" style="color:var(--saffron)">⚠ inside pending change</span></div>
+              <div class="row"><span class="t">Dates</span> 30 days to first order · 6-week delivery</div>
+            </div>
+          </div>
+          <div class="panel" data-panel="items" role="tabpanel">
+            <div class="sug" data-sug>
+              <span class="ic">☐</span>
+              <span><span class="what">Respond to counsel on exclusivity removal</span><br><span class="receipt">follow-up · from <a href="#wordproc">change on 4.2</a></span> <span class="ok-note">→ todo created</span></span>
+              <span class="sug-acts"><button class="acc">Accept</button><button>Edit</button><button>Dismiss</button></span>
+            </div>
+            <div class="sug" data-sug>
+              <span class="ic">◷</span>
+              <span><span class="what">First-order deadline: 30 days after execution</span><br><span class="receipt">obligation · from <a href="#wordproc">clause 4.3</a> · armed on signature</span> <span class="ok-note">→ reminder staged</span></span>
+              <span class="sug-acts"><button class="acc">Accept</button><button>Edit</button><button>Dismiss</button></span>
+            </div>
+          </div>
+        </div>
+        <div class="cell" style="border-right:0;">
+          <span class="ztag"><em>Z6</em> · CONTEXT</span>
+          <p class="microlabel">Tags</p>
+          <div class="tagrow">
+            <span class="tag">wholesale</span><span class="tag">contract</span>
+            <span class="tag auto"><i></i>hendrick</span>
+            <button class="tag add">+ tag</button>
+          </div>
+          <div class="notefield"><b>Note</b> — hold signature until margin math re-checks at $6,000/case against slide 7 of the pitch.</div>
+        </div>
+      </div>
+
+      <div class="grid g2" style="grid-template-columns: 1.6fr 1fr;">
+        <div class="cell">
+          <span class="ztag"><em>Z7</em> · CONNECTIONS</span>
+          <div class="mini-list">
+            <div class="row"><span class="t">Deck</span> Magpod wholesale pitch v4 <span class="why2">same negotiation</span></div>
+            <div class="row"><span class="t">Doc</span> agreement v3 <span class="why2">hash matches “sent Jun 24” attachment</span></div>
+            <div class="row"><span class="t">Voice</span> Buyer call — Jul 8 <span class="why2">same people</span></div>
+          </div>
+        </div>
+        <div class="cell" style="border-right:0;">
+          <span class="ztag"><em>Z8</em> · RECORD</span>
+          <div class="actlog"><b>Jul 11</b> triple-rendered clean/redline/original (L2)<br><b>Jul 11</b> changes digest · entities · items (L3)</div>
+          <div class="allmeta">All metadata (21) ▸ &nbsp;·&nbsp; comments (2) with anchored ranges ▸</div>
+        </div>
+      </div>
+    </article>
+  </section>
+
   <!-- ============ RULES ============ -->
   <section class="rules" id="rules">
     <h3>What keeps sixteen families feeling like one product</h3>
@@ -1303,6 +2055,209 @@
     }
   }
 
+  // --- video: hero frame + storyboard tiles
+  function drawBench(ctx, w, h, seed, zoom) {
+    const r = rng(seed);
+    const g = ctx.createLinearGradient(0, 0, w, h);
+    g.addColorStop(0, '#41372c'); g.addColorStop(0.5, '#63492f'); g.addColorStop(1, '#2e261d');
+    ctx.fillStyle = g; ctx.fillRect(0, 0, w, h);
+    for (let i = 0; i < 18; i++) {
+      const y = r() * h;
+      ctx.strokeStyle = 'rgba(20,14,9,' + (0.07 + r() * 0.1) + ')';
+      ctx.lineWidth = 1 + r() * 2;
+      ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(w, y + (r() - 0.5) * 18); ctx.stroke();
+    }
+    const bx = w * (0.35 + r() * 0.3), by = h * (0.4 + r() * 0.2), bs = h * 0.3 * zoom;
+    ctx.fillStyle = 'rgba(58,49,40,0.9)';
+    ctx.beginPath(); ctx.roundRect(bx - bs * 0.8, by - bs * 0.5, bs * 1.6, bs, bs * 0.18); ctx.fill();
+    ctx.strokeStyle = 'rgba(239,237,230,0.18)'; ctx.lineWidth = 1; ctx.stroke();
+    [[-0.5, -0.22], [0.5, -0.22], [-0.5, 0.22], [0.5, 0.22]].forEach(([dx, dy]) => {
+      const rg = ctx.createRadialGradient(bx + dx * bs, by + dy * bs, 1, bx + dx * bs, by + dy * bs, bs * 0.1);
+      rg.addColorStop(0, 'rgba(228,183,105,0.95)'); rg.addColorStop(1, 'rgba(168,135,79,0)');
+      ctx.fillStyle = rg; ctx.beginPath(); ctx.arc(bx + dx * bs, by + dy * bs, bs * 0.1, 0, Math.PI * 2); ctx.fill();
+    });
+    const v = ctx.createRadialGradient(w / 2, h / 2, h * 0.3, w / 2, h / 2, w * 0.7);
+    v.addColorStop(0, 'rgba(0,0,0,0)'); v.addColorStop(1, 'rgba(10,8,6,0.5)');
+    ctx.fillStyle = v; ctx.fillRect(0, 0, w, h);
+  }
+  function drawVideoFrame() {
+    const c = document.getElementById('vid-frame');
+    if (!c) return;
+    const [ctx, w, h] = sizeCanvas(c, 300);
+    drawBench(ctx, w, h, 23, 1);
+    ctx.fillStyle = 'rgba(34,31,29,0.75)';
+    ctx.font = '10px ui-monospace, monospace';
+    ctx.fillRect(w - 84, h - 26, 74, 17);
+    ctx.fillStyle = '#efede6'; ctx.fillText('4K · 1:26', w - 76, h - 14);
+  }
+  function drawStoryboards() {
+    document.querySelectorAll('.storyboard canvas').forEach(c => {
+      const dpr = window.devicePixelRatio || 1;
+      c.width = 88 * dpr; c.height = 50 * dpr;
+      const ctx = c.getContext('2d'); ctx.scale(dpr, dpr);
+      drawBench(ctx, 88, 50, 31 + Number(c.dataset.sb) * 7, 0.7 + Number(c.dataset.sb) * 0.06);
+    });
+  }
+
+  // --- model: superellipse shell, orbitable, 3 view modes
+  let modelYaw = 0.5, modelMode = 'solid';
+  function drawModel() {
+    const c = document.getElementById('model-canvas');
+    if (!c) return;
+    const [ctx, w, h] = sizeCanvas(c, 300);
+    ctx.clearRect(0, 0, w, h);
+    const cx = w / 2, cy = h * 0.58, S = Math.min(w, h) * 0.62;
+    const L = 1.0, W2 = 0.74, H = 0.62; // proportions 84x62x38, height exaggerated for read
+    const proj = (x, y, z) => {
+      const xr = x * Math.cos(modelYaw) - y * Math.sin(modelYaw);
+      const yr = x * Math.sin(modelYaw) + y * Math.cos(modelYaw);
+      return [cx + (xr - yr) * S * 0.72, cy + (xr + yr) * S * 0.34 - z * S * 0.62];
+    };
+    const ring = z => {
+      const pts = [];
+      for (let i = 0; i < 64; i++) {
+        const t = (i / 64) * Math.PI * 2;
+        const px = Math.sign(Math.cos(t)) * Math.pow(Math.abs(Math.cos(t)), 0.5) * L / 2;
+        const py = Math.sign(Math.sin(t)) * Math.pow(Math.abs(Math.sin(t)), 0.5) * W2 / 2;
+        pts.push(proj(px, py, z));
+      }
+      return pts;
+    };
+    const top = ring(H), bot = ring(0);
+    const path = pts => { ctx.beginPath(); pts.forEach((p, i) => i ? ctx.lineTo(p[0], p[1]) : ctx.moveTo(p[0], p[1])); ctx.closePath(); };
+    // ground shadow first, under everything
+    const g0 = proj(0, 0, 0);
+    ctx.beginPath();
+    ctx.ellipse(g0[0], g0[1] + 10, S * 0.66, S * 0.17, 0, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(0,0,0,0.28)'; ctx.fill();
+    // body silhouette = convex hull of both rings (robust at any yaw)
+    const hull = pts => {
+      const P = pts.slice().sort((a, b) => a[0] - b[0] || a[1] - b[1]);
+      const cross = (o, a, b) => (a[0] - o[0]) * (b[1] - o[1]) - (a[1] - o[1]) * (b[0] - o[0]);
+      const lo = [], up = [];
+      for (const p of P) { while (lo.length >= 2 && cross(lo[lo.length - 2], lo[lo.length - 1], p) <= 0) lo.pop(); lo.push(p); }
+      for (const p of P.reverse()) { while (up.length >= 2 && cross(up[up.length - 2], up[up.length - 1], p) <= 0) up.pop(); up.push(p); }
+      return lo.slice(0, -1).concat(up.slice(0, -1));
+    };
+    const sideWall = () => { const hp = hull(top.concat(bot)); ctx.beginPath(); hp.forEach((p, i) => i ? ctx.lineTo(p[0], p[1]) : ctx.moveTo(p[0], p[1])); ctx.closePath(); };
+    if (modelMode === 'wire') {
+      ctx.strokeStyle = 'rgba(239,237,230,0.5)'; ctx.lineWidth = 1;
+      [0, 0.21, 0.41, 0.62].forEach(z => { path(ring(z)); ctx.stroke(); });
+      for (let i = 0; i < 64; i += 8) {
+        ctx.beginPath(); ctx.moveTo(top[i][0], top[i][1]); ctx.lineTo(bot[i][0], bot[i][1]); ctx.stroke();
+      }
+    } else {
+      sideWall();
+      const sg = ctx.createLinearGradient(0, cy - S * 0.5, 0, cy + S * 0.45);
+      sg.addColorStop(0, '#4a3f33'); sg.addColorStop(1, '#2c2620');
+      ctx.fillStyle = sg; ctx.fill();
+      path(top); ctx.fillStyle = '#5d4e3d'; ctx.fill();
+      ctx.strokeStyle = 'rgba(239,237,230,0.3)'; ctx.lineWidth = 1; ctx.stroke();
+      // insert bosses on top face
+      [[-0.32, -0.22], [0.32, -0.22], [-0.32, 0.22], [0.32, 0.22]].forEach(([x, y]) => {
+        const p = proj(x, y, H);
+        ctx.beginPath(); ctx.ellipse(p[0], p[1], S * 0.06, S * 0.032, 0, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(210,172,110,0.9)'; ctx.fill();
+        ctx.strokeStyle = 'rgba(34,31,29,0.6)'; ctx.stroke();
+      });
+    }
+    if (modelMode === 'dims') {
+      ctx.strokeStyle = '#ff9505'; ctx.fillStyle = '#ff9505';
+      ctx.lineWidth = 1; ctx.font = '10px ui-monospace, monospace';
+      const a = proj(-L / 2, W2 / 2, 0), b = proj(L / 2, W2 / 2, 0);
+      ctx.beginPath(); ctx.moveTo(a[0], a[1] + 18); ctx.lineTo(b[0], b[1] + 18); ctx.stroke();
+      ctx.fillText('84 mm', (a[0] + b[0]) / 2 - 16, (a[1] + b[1]) / 2 + 32);
+      const t = proj(L / 2, -W2 / 2, H), bo = proj(L / 2, -W2 / 2, 0);
+      ctx.beginPath(); ctx.moveTo(t[0] + 16, t[1]); ctx.lineTo(bo[0] + 16, bo[1]); ctx.stroke();
+      ctx.fillText('38', t[0] + 20, (t[1] + bo[1]) / 2);
+    }
+  }
+  const modelC = document.getElementById('model-canvas');
+  if (modelC) {
+    let dragging = false, lastX = 0;
+    modelC.addEventListener('pointerdown', e => { dragging = true; lastX = e.clientX; modelC.setPointerCapture(e.pointerId); });
+    modelC.addEventListener('pointermove', e => {
+      if (!dragging) return;
+      modelYaw += (e.clientX - lastX) * 0.01; lastX = e.clientX; drawModel();
+    });
+    modelC.addEventListener('pointerup', () => dragging = false);
+    document.querySelectorAll('.viewer-toggles button').forEach(b => b.addEventListener('click', () => {
+      modelMode = b.dataset.vm;
+      document.querySelectorAll('.viewer-toggles button').forEach(x => x.setAttribute('aria-pressed', x === b ? 'true' : 'false'));
+      drawModel();
+    }));
+  }
+
+  // --- gcode: plan-view toolpath, layer slider + feature toggles
+  const gFeats = { perim: true, infill: true, brim: true };
+  function drawGcode() {
+    const c = document.getElementById('gcode-canvas');
+    if (!c) return;
+    const [ctx, w, h] = sizeCanvas(c, 290);
+    ctx.clearRect(0, 0, w, h);
+    const layer = Number(document.getElementById('layer-slider')?.value || 87);
+    const cx = w / 2, cy = h / 2, S = Math.min(w, h) * 0.4;
+    const se = (s, n) => {
+      ctx.beginPath();
+      for (let i = 0; i <= 72; i++) {
+        const t = (i / 72) * Math.PI * 2;
+        const x = cx + Math.sign(Math.cos(t)) * Math.pow(Math.abs(Math.cos(t)), 0.55) * S * 1.28 * s;
+        const y = cy + Math.sign(Math.sin(t)) * Math.pow(Math.abs(Math.sin(t)), 0.55) * S * 0.94 * s;
+        i ? ctx.lineTo(x, y) : ctx.moveTo(x, y);
+      }
+      ctx.closePath();
+    };
+    // faint layers-below ghost
+    ctx.strokeStyle = 'rgba(239,237,230,0.05)'; ctx.lineWidth = 6; se(1.04); ctx.stroke();
+    if (gFeats.perim) {
+      ctx.strokeStyle = '#e2711d'; ctx.lineWidth = 2;
+      se(1); ctx.stroke(); se(0.94); ctx.stroke();
+    }
+    const topLayer = layer > 170 || layer < 8;
+    ctx.save(); se(0.88); ctx.clip();
+    if (gFeats.infill && !topLayer) {
+      ctx.strokeStyle = '#3fa46e'; ctx.lineWidth = 1.4;
+      const gap = 18;
+      for (let d = -w; d < w * 2; d += gap) {
+        ctx.beginPath(); ctx.moveTo(d, 0); ctx.lineTo(d - h, h); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(d, 0); ctx.lineTo(d + h, h); ctx.stroke();
+      }
+    }
+    if (gFeats.brim && topLayer) {
+      ctx.strokeStyle = '#5e8fc7'; ctx.lineWidth = 1.4;
+      for (let d = -w; d < w * 2; d += 5) { ctx.beginPath(); ctx.moveTo(d, 0); ctx.lineTo(d - h, h); ctx.stroke(); }
+    }
+    ctx.restore();
+    if (gFeats.brim && !topLayer) {
+      ctx.strokeStyle = '#5e8fc7'; ctx.lineWidth = 1.6;
+      [[-0.32, -0.22], [0.32, -0.22], [-0.32, 0.22], [0.32, 0.22]].forEach(([x, y]) => {
+        ctx.beginPath(); ctx.ellipse(cx + x * S * 2.1, cy + y * S * 1.6, S * 0.1, S * 0.1, 0, 0, Math.PI * 2); ctx.stroke();
+      });
+    }
+    ctx.fillStyle = 'rgba(239,237,230,0.5)';
+    ctx.font = '9.5px ui-monospace, monospace';
+    ctx.fillText(topLayer ? (layer < 8 ? 'first layers · solid + brim' : 'top layers · solid infill') : 'Z ' + (layer * 0.2).toFixed(1) + ' mm', 14, h - 12);
+  }
+  const gSlider = document.getElementById('layer-slider');
+  if (gSlider) {
+    gSlider.addEventListener('input', () => {
+      document.getElementById('layer-num').innerHTML = gSlider.value + '<span style="color:var(--dim)"> / 190</span>';
+      drawGcode();
+    });
+    document.querySelectorAll('.feat-legend button').forEach(b => b.addEventListener('click', () => {
+      gFeats[b.dataset.feat] = !gFeats[b.dataset.feat];
+      b.setAttribute('aria-pressed', gFeats[b.dataset.feat] ? 'true' : 'false');
+      drawGcode();
+    }));
+  }
+
+  // --- wordproc markup toggle
+  const wpCard = document.getElementById('wp-card');
+  if (wpCard) wpCard.querySelectorAll('.markup-toggle button').forEach(b => b.addEventListener('click', () => {
+    wpCard.dataset.markup = b.dataset.mk;
+    wpCard.querySelectorAll('.markup-toggle button').forEach(x => x.setAttribute('aria-pressed', x === b ? 'true' : 'false'));
+  }));
+
   // --- tabs (per card)
   document.querySelectorAll('[data-tabs]').forEach(bar => {
     const scope = bar.parentElement;
@@ -1332,7 +2287,7 @@
     });
   });
 
-  function drawAll() { drawVoiceWave(); drawArt(); drawPhoto(); }
+  function drawAll() { drawVoiceWave(); drawArt(); drawPhoto(); drawVideoFrame(); drawStoryboards(); drawModel(); drawGcode(); }
   buildThinwave();
   drawAll();
   let rsz; addEventListener('resize', () => { clearTimeout(rsz); rsz = setTimeout(drawAll, 120); });
